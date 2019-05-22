@@ -8,7 +8,6 @@
     "axios": "latest",
     "cheerio": "latest",
     "cookie-parser": "latest",
-    "cron": "latest",
     "cross-env": "latest",
     "debug": "latest",
     "dotenv": "latest",
@@ -19,6 +18,7 @@
     "http-errors": "latest",
     "jade": "latest",
     "morgan": "latest",
+    "node-cron": "latest",
     "telegraf": "latest"
   },
   "scripts": {

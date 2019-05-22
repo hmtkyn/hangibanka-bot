@@ -1,5 +1,4 @@
-// import cron from 'node-cron'
-import { CronJob } from 'cron'
+import cron from 'node-cron'
 import getAkbankForex from './data/akbank'
 import getAlBarakaTurkBankForex from './data/albarakaturkbank'
 import getDenizBankForex from './data/denizbank'
@@ -19,35 +18,8 @@ import getVakifBankForex from './data/vakifbank'
 import getYapiKrediBankForex from './data/yapikredibank'
 import getZiraatBankForex from './data/ziraatbank'
 
-/* export default function goCron() {
-  cron.schedule('* 8,9,10,11,13,14,15,16,17,18 * * 1,2,3,4,5', () => {
-    return (
-      console.log('=====================================>') +
-      getAkbankForex() +
-      getAlBarakaTurkBankForex() +
-      getDenizBankForex() +
-      getEnParaForex() +
-      getGarantiBankForex() +
-      getHalkBankForex() +
-      getHSBCBankForex() +
-      getIngBankForex() +
-      getIsBankForex() +
-      getKuveytTurkBankForex() +
-      getQNBFinansBankForex() +
-      getSekerBankForex() +
-      getSeninBankanForex() +
-      getTEBBankForex() +
-      getTurkiyeFinansBankForex() +
-      getVakifBankForex() +
-      getYapiKrediBankForex() +
-      getZiraatBankForex()
-    )
-  })
-}
-goCron() */
-
 export default function goCron() {
-  const job = new CronJob(' * 8,9,10,11,13,14,15,16,17,18 * * 1,2,3,4,5', () => {
+  cron.schedule('* 8,9,10,11,13,14,15,16,17,20 * * 1,2,3,4,5', () => {
     return (
       console.log('=====================================>') +
       getAkbankForex() +
@@ -70,7 +42,6 @@ export default function goCron() {
       getZiraatBankForex()
     )
   })
-  job.start()
 }
 goCron()
 
