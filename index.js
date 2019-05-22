@@ -19,7 +19,7 @@ import getYapiKrediBankForex from './data/yapikredibank'
 import getZiraatBankForex from './data/ziraatbank'
 
 export default function goCron() {
-  cron.schedule('* 8,9,10,11,13,14,15,16,17,20 * * 1,2,3,4,5', () => {
+  cron.schedule('* 8-12,13-17 * * 1-5', () => {
     return (
       console.log('=====================================>') +
       getAkbankForex() +
@@ -41,7 +41,7 @@ export default function goCron() {
       getYapiKrediBankForex() +
       getZiraatBankForex()
     )
-  })
+  }, { scheduled: true, timezone: "Europe/Istanbul" })
 }
 goCron()
 
