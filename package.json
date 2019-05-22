@@ -1,0 +1,27 @@
+{
+  "name": "forextakip-bots",
+  "version": "1.0.0",
+  "description": "Forex Takip Web Application",
+  "private": true,
+  "scripts": {
+    "start": "node -r esm ./bin/www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "express": "~4.16.0",
+    "http-errors": "~1.6.2",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.0",
+    "@firebase/firestore": "^1.2.2",
+    "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.3",
+    "cross-env": "^5.2.0",
+    "dotenv": "^7.0.0",
+    "esm": "^3.2.22",
+    "firebase": "^5.11.0",
+    "firebase-admin": "^7.3.0",
+    "node-cron": "^2.0.3",
+    "telegraf": "^3.29.0"
+  }
+}
