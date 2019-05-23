@@ -1,5 +1,4 @@
 import axios from 'axios'
-import cheerio from 'cheerio'
 import TegAction from '../functions/telegram'
 import fire from '../functions/firestore'
 import fixNumber from '../functions/numberfix'
@@ -95,55 +94,50 @@ export async function getTEBBankEURUSD() {
   }
 }
 
-const getGAUUrl = 'https://www.cepteteb.com.tr/altin-kurlari'
-
-async function getHTML(url) {
-  try {
-    const { data: html } = await axios({
-      method: 'get',
-      url: getGAUUrl,
-      timeout: 5000,
-    })
-    return html
-  } catch (error) {
-    console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: TEB Bank -> Altın')
-  }
-}
-
-async function getTEBBankAlisGAU(html) {
-  const $ = cheerio.load(html)
-  const TEBBankAlisGAU = $(
-    'table#altinTablo > tbody > tr:nth-child(1) > td:nth-child(2)',
-  ).text()
-  return TEBBankAlisGAU
-}
-
-async function getTEBBankSatisGAU(html) {
-  const $ = cheerio.load(html)
-  const TEBBankSatisGAU = $(
-    'table#altinTablo > tbody > tr:nth-child(1) > td:nth-child(3)',
-  ).text()
-  return TEBBankSatisGAU
-}
+const getGAUUrl = 'https://www.cepteteb.com.tr/webservice/index'
 
 export async function getTEBBankGAU() {
-  const html = await getHTML(getURL)
-  const pTEBBankAlisGAU = await getTEBBankAlisGAU(html)
-  const pTEBBankSatisGAU = await getTEBBankSatisGAU(html)
+  try {
+    const fixRes = await axios({
+      url: getGAUUrl,
+      method: 'post',
+      timeout: 5000,
+      "data": "ServiceUrl=%2Fservices%2FGetGunlukAltinKur&Source=cepteteb&Data=",
+      headers: {
+        Host: 'www.cepteteb.com.tr',
+        Referer: 'https://www.cepteteb.com.tr/altin-kurlari',
+        Connection: 'keep-alive',
+        Cookie: '_ga=GA1.3.1133586047.1555865199; _fbp=fb.2.1555865199131.902423697; cto_lwid=564d6151-49d8-4cc4-8290-54cf1a0eb456; _gid=GA1.3.1748148296.1558596817; popup=true; _gat=1',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Cache-Control': 'no-cache',
+        Accept: 'application/json, text/javascript, */*; q=0.01',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3,pt;q=0.2,de;q=0.1',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
+        Origin: 'https://www.cepteteb.com.tr',
+        Pragma: 'no-cache'
+      },
+    })
+    const resData = JSON.parse(fixRes.data)
+    const resGAUBuy = resData['result'][0]['alisFiyat']
+    const resGAUSell = resData['result'][0]['satisFiyat']
 
-  const setGAU = getDoc.update({
-    bank_gau_buy: fixNumber(pTEBBankAlisGAU),
-    bank_gau_sell: fixNumber(pTEBBankSatisGAU),
-    bank_gau_rate: fixNumber(
-      fixNumber(pTEBBankSatisGAU) - fixNumber(pTEBBankAlisGAU),
-    ),
-    bank_gau_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+    const setGAU = getDoc.update({
+      bank_gau_buy: fixNumber(resGAUBuy),
+      bank_gau_sell: fixNumber(resGAUSell),
+      bank_gau_rate: fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy)),
+      bank_gau_update: fire.firestore.Timestamp.fromDate(new Date()),
+    })
 
-  console.log(
-    `TEBBank - GAU = Alış : ${pTEBBankAlisGAU} / Satış: ${pTEBBankSatisGAU}`,
-  )
+    console.log(
+      `TEBBank - GAU = Alış : ${fixNumber(resGAUBuy)} TL / Satış: ${fixNumber(resGAUSell)} TL`,
+    )
+  } catch (error) {
+    console.error(error)
+    TegAction(767580569, 'Hey Profesör! Problem: TEBBank -> Altın')
+  }
 }
 
 export default function getTEBBankForex() {
