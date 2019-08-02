@@ -22,8 +22,8 @@ export async function getAkBankUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = JSON.parse(response.data.GetCurrencyRatesResult)
-    const resUSDBuy = resData['cur'][31]['DovizAlis']
-    const resUSDSell = resData['cur'][31]['DovizSatis']
+    const resUSDBuy = resData['cur'][33]['DovizAlis']
+    const resUSDSell = resData['cur'][33]['DovizSatis']
 
     const setUSD = getDoc.update({
       bank_usd_buy: fixNumber(resUSDBuy),
@@ -70,8 +70,8 @@ export async function getAkBankEURUSD() {
     const resData = JSON.parse(response.data.GetCurrencyRatesResult)
     const resEURBuy = resData['cur'][13]['DovizAlis']
     const resEURSell = resData['cur'][13]['DovizSatis']
-    const resUSDBuy = resData['cur'][31]['DovizAlis']
-    const resUSDSell = resData['cur'][31]['DovizSatis']
+    const resUSDBuy = resData['cur'][33]['DovizAlis']
+    const resUSDSell = resData['cur'][33]['DovizSatis']
 
     const setEURUSD = getDoc.update({
       bank_eurusd_buy: fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy)),
@@ -102,8 +102,8 @@ export async function getAkBankGAU() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = JSON.parse(response.data.GetCurrencyRatesResult)
-    const resGAUBuy = resData['cur'][33]['DovizAlis']
-    const resGAUSell = resData['cur'][33]['DovizSatis']
+    const resGAUBuy = resData['cur'][35]['DovizAlis']
+    const resGAUSell = resData['cur'][35]['DovizSatis']
 
     const setGAU = getDoc.update({
       bank_gau_buy: fixNumber(resGAUBuy),
