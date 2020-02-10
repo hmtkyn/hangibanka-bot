@@ -150,7 +150,7 @@ async function getGAUHTML(url) {
 async function getVakifBankAlisGAU(html) {
   const $ = cheerio.load(html)
   const VakifBankAlisGAU = $(
-    'table#ctl00_plchldContent_dtaGridAltin > tbody > tr:nth-child(2) > td:nth-child(3)',
+    'table#ctl00_plchldContent_dtaGridAltin > tbody > tr:nth-child(3) > td:nth-child(3)',
   ).text()
   return VakifBankAlisGAU
 }
@@ -158,7 +158,7 @@ async function getVakifBankAlisGAU(html) {
 async function getVakifBankSatisGAU(html) {
   const $ = cheerio.load(html)
   const VakifBankSatisGAU = $(
-    'table#ctl00_plchldContent_dtaGridAltin > tbody > tr:nth-child(2) > td:nth-child(4)',
+    'table#ctl00_plchldContent_dtaGridAltin > tbody > tr:nth-child(3) > td:nth-child(4)',
   ).text()
   return VakifBankSatisGAU
 }

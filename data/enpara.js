@@ -14,7 +14,7 @@ const setBankData = getDoc.update({
 })
 
 const getURL =
-  'https://www.qnbfinansbank.enpara.com/doviz-kur-bilgileri/doviz-altin-kurlari.aspx'
+  'https://www.qnbfinansbank.enpara.com/hesaplar/doviz-ve-altin-kurlari'
 
 async function getHTML(url) {
   try {
@@ -33,7 +33,7 @@ async function getHTML(url) {
 async function getEnParaAlisUSD(html) {
   const $ = cheerio.load(html)
   const EnParaAlisUSD = $(
-    '#pnlContent > span:nth-child(1) > dl > dd:nth-child(2) > .dlCont > span',
+    'div.enpara-gold-exchange-rates__table > div.enpara-gold-exchange-rates__table-item:nth-child(2) > span:nth-child(2)',
   ).text()
   return EnParaAlisUSD
 }
@@ -41,7 +41,7 @@ async function getEnParaAlisUSD(html) {
 async function getEnParaSatisUSD(html) {
   const $ = cheerio.load(html)
   const EnParaSatisUSD = $(
-    '#pnlContent > span:nth-child(1) > dl > dd:nth-child(3) > .dlCont > span',
+    'div.enpara-gold-exchange-rates__table > div.enpara-gold-exchange-rates__table-item:nth-child(2) > span:nth-child(3)',
   ).text()
   return EnParaSatisUSD
 }
@@ -68,7 +68,7 @@ export async function getEnParaUSD() {
 async function getEnParaAlisEUR(html) {
   const $ = cheerio.load(html)
   const EnParaAlisEUR = $(
-    '#pnlContent > span:nth-child(2) > dl > dd:nth-child(2) > .dlCont > span',
+    'div.enpara-gold-exchange-rates__table > div.enpara-gold-exchange-rates__table-item:nth-child(3) > span:nth-child(2)',
   ).text()
   return EnParaAlisEUR
 }
@@ -76,7 +76,7 @@ async function getEnParaAlisEUR(html) {
 async function getEnParaSatisEUR(html) {
   const $ = cheerio.load(html)
   const EnParaSatisEUR = $(
-    '#pnlContent > span:nth-child(2) > dl > dd:nth-child(3) > .dlCont > span',
+    'div.enpara-gold-exchange-rates__table > div.enpara-gold-exchange-rates__table-item:nth-child(3) > span:nth-child(3)',
   ).text()
   return EnParaSatisEUR
 }
@@ -122,14 +122,14 @@ export async function getEnParaEURUSD() {
   })
 
   console.log(
-    `EnPara - EUR/USD = Alış : ${pEnParaAlisEUR} / Satış: ${pEnParaSatisEUR}`,
+    `EnPara - EUR/USD = Alış : ${fixNumber(pEnParaAlisEUR) / fixNumber(pEnParaAlisUSD)} / Satış: ${fixNumber(pEnParaSatisEUR) / fixNumber(pEnParaSatisUSD)}`,
   )
 }
 
 async function getEnParaAlisGAU(html) {
   const $ = cheerio.load(html)
   const EnParaAlisGAU = $(
-    '#pnlContent > span:nth-child(3) > dl > dd:nth-child(2) > .dlCont > span',
+    'div.enpara-gold-exchange-rates__table > div.enpara-gold-exchange-rates__table-item:nth-child(4) > span:nth-child(2)',
   ).text()
   return EnParaAlisGAU
 }
@@ -137,7 +137,7 @@ async function getEnParaAlisGAU(html) {
 async function getEnParaSatisGAU(html) {
   const $ = cheerio.load(html)
   const EnParaSatisGAU = $(
-    '#pnlContent > span:nth-child(3) > dl > dd:nth-child(3) > .dlCont > span',
+    'div.enpara-gold-exchange-rates__table > div.enpara-gold-exchange-rates__table-item:nth-child(4) > span:nth-child(3)',
   ).text()
   return EnParaSatisGAU
 }

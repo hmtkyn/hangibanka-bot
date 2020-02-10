@@ -1,7 +1,7 @@
 {
-  "name": "forextakip-bots",
+  "name": "hangibank-bot",
   "version": "1.0.0",
-  "description": "Forex Takip Web Application",
+  "description": "Hangibank Web Application",
   "private": true,
   "dependencies": {
     "@firebase/firestore": "latest",

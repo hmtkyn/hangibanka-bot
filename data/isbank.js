@@ -1,4 +1,5 @@
 import axios from 'axios'
+import cheerio from 'cheerio'
 import TegAction from '../functions/telegram'
 import fire from '../functions/firestore'
 import fixNumber from '../functions/numberfix'
@@ -22,12 +23,15 @@ let fixUTCFullTime =
 
 let fixUTCFullTimeConvert = Date.now()
 
-const getURL =
+let getURL =
   'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FxRatesHandler.ashx?Lang=tr&fxRateType=INTERACTIVE&date=' +
   fixUTCFullTime +
   '&time=' +
   fixUTCFullTimeConvert +
   ''
+let getGauURL = 'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FinancialDashboardHandler.ashx?time=' + fixUTCFullTimeConvert + ''
+
+
 
 export async function getIsBankUSD() {
   try {
@@ -109,6 +113,31 @@ export async function getIsBankEURUSD() {
   }
 }
 
+export async function getIsBankGAU() {
+  try {
+    const response = await axios({ method: 'get', url: getGauURL, timeout: 5000 })
+    const resData = response.data
+    // console.log(resData)
+    const resGAUBuy = resData['Market'][2]['FxRateBuy']
+    const resGAUSell = resData['Market'][2]['FxRateSell']
+
+    const setGAU = getDoc.update({
+      bank_gau_buy: fixNumber(resGAUBuy),
+      bank_gau_sell: fixNumber(resGAUSell),
+      bank_gau_rate: fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy)),
+      bank_gau_update: fire.firestore.Timestamp.fromDate(new Date()),
+    })
+
+    console.log(
+      `IsBank - GAU = Alış : ${resGAUBuy} TL / Satış: ${resGAUSell} TL`,
+    )
+  } catch (error) {
+    console.error(error)
+    TegAction(767580569, 'Hey Profesör! Problem: IsBank -> Altın')
+  }
+}
+
+
 export default function getIsBankForex() {
-  return getIsBankUSD() + getIsBankEUR() + getIsBankEURUSD()
+  return getIsBankUSD() + getIsBankEUR() + getIsBankEURUSD() + getIsBankGAU()
 }
