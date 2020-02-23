@@ -1,25 +1,29 @@
 import axios from 'axios'
 import TegAction from '../functions/telegram'
-import fire from '../functions/firestore'
+import db from './../functions/mysql'
 import fixNumber from '../functions/numberfix'
 
-const db = fire.firestore()
+const b_name = "ING Bank"
+const b_slug = "ing"
+const b_url = "https://www.ing.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/ing_logo.jpg"
+const b_type_capital = "Özel"
+const b_type_service = "Mevduat"
 
-const getDoc = db.collection('fxt_bank').doc('fxt_ingbank')
-const setBankData = getDoc.update({
-  bank_name: 'ING Bank',
-  bank_img:
-    'https://firebasestorage.googleapis.com/v0/b/forextakip-web.appspot.com/o/bank%2Fing_logo.png?alt=media&token=1a5cefa7-8ed2-4955-8f5e-41525d923888',
-})
+let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
+
+let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
 const getURL =
   'https://www.ing.com.tr/ProxyManagement/SiteManagerService_Script.aspx/GetCurrencyRates'
+
 function checkTime(i) {
   if (i < 10) {
     i = '0' + i
   }
   return i
 }
+
 var fxgun = checkTime(new Date().getDate())
 var fxaycore = new Date().getMonth()
 var fxay = checkTime(++fxaycore)
@@ -28,6 +32,7 @@ var fxsaat = checkTime(new Date().getHours())
 var fxdk = checkTime(new Date().getMinutes())
 var fixDate =
   fxyil + '-' + fxay + '-' + fxgun + 'T' + fxsaat + ':' + fxdk + ':00.000Z'
+
 export async function getIngBankUSD() {
   try {
     const fixRes = await axios({
@@ -55,19 +60,23 @@ export async function getIngBankUSD() {
     const resUSDBuy = resData[0]['BuyingExchangeRate']
     const resUSDSell = resData[0]['SellingExchangeRate']
 
-    const setUSD = getDoc.update({
-      bank_usd_buy: fixNumber(resUSDBuy),
-      bank_usd_sell: fixNumber(resUSDSell),
-      bank_usd_rate: fixNumber(fixNumber(resUSDSell) - fixNumber(resUSDBuy)),
-      bank_usd_update: fire.firestore.Timestamp.fromDate(new Date()),
-    })
+    let bank_usd_buy = fixNumber(resUSDBuy)
+    let bank_usd_sell = fixNumber(resUSDSell)
+    let bank_usd_rate = fixNumber(fixNumber(resUSDSell) - fixNumber(resUSDBuy))
 
+    let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+
+    let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+    db(update_data)
+
+    console.log('Realtime USD added!')
     console.log(
-      `IngBank - USD = Alış : ${resUSDBuy} TL / Satış: ${resUSDSell} TL`,
+      `IngBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: INGBank -> Dolar')
+    TegAction('Hey Profesör! Problem: INGBank -> Dolar')
   }
 }
 
@@ -99,19 +108,23 @@ export async function getIngBankEUR() {
     const resEURBuy = resData[1]['BuyingExchangeRate']
     const resEURSell = resData[1]['SellingExchangeRate']
 
-    const setEUR = getDoc.update({
-      bank_eur_buy: fixNumber(resEURBuy),
-      bank_eur_sell: fixNumber(resEURSell),
-      bank_eur_rate: fixNumber(fixNumber(resEURSell) - fixNumber(resEURBuy)),
-      bank_eur_update: fire.firestore.Timestamp.fromDate(new Date()),
-    })
+    let bank_eur_buy = fixNumber(resEURBuy)
+    let bank_eur_sell = fixNumber(resEURSell)
+    let bank_eur_rate = fixNumber(fixNumber(resEURSell) - fixNumber(resEURBuy))
 
+    let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
+
+    let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+    db(update_data)
+
+    console.log('Realtime EUR added!')
     console.log(
-      `IngBank - EUR = Alış : ${resEURBuy} TL / Satış: ${resEURSell} TL`,
+      `IngBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: INGBank -> Euro')
+    TegAction('Hey Profesör! Problem: INGBank -> Euro')
   }
 }
 
@@ -145,28 +158,28 @@ export async function getIngBankEURUSD() {
     const resUSDBuy = resData[0]['BuyingExchangeRate']
     const resUSDSell = resData[0]['SellingExchangeRate']
 
-    const setEURUSD = getDoc.update({
-      bank_eurusd_buy: fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy)),
-      bank_eurusd_sell: fixNumber(
-        fixNumber(resEURSell) / fixNumber(resUSDSell),
-      ),
-      bank_eurusd_rate: fixNumber(
-        fixNumber(fixNumber(resEURSell) / fixNumber(resUSDSell)) -
-        fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy)),
-      ),
-      bank_eurusd_update: fire.firestore.Timestamp.fromDate(new Date()),
-    })
+    let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
+    let bank_eurusd_sell = fixNumber(
+      fixNumber(resEURSell) / fixNumber(resUSDSell)
+    )
+    let bank_eurusd_rate = fixNumber(
+      fixNumber(fixNumber(resEURSell) / fixNumber(resUSDSell)) -
+      fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
+    )
 
+    let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
+
+    let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+    db(update_data)
+
+    console.log('Realtime EUR/USD added!')
     console.log(
-      `IngBank - EUR/USD = Alış : ${fixNumber(
-        fixNumber(resEURBuy) / fixNumber(resUSDBuy),
-      )} $ / Satış: ${fixNumber(
-        fixNumber(resEURSell) / fixNumber(resUSDSell),
-      )} $`,
+      `IngBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
     )
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: INGBank -> Euro/Dolar')
+    TegAction('Hey Profesör! Problem: INGBank -> Euro/Dolar')
   }
 }
 
@@ -198,24 +211,28 @@ export async function getIngBankGAU() {
     const resGAUBuy = resData[13]['BuyingExchangeRate']
     const resGAUSell = resData[13]['SellingExchangeRate']
 
-    const setGAU = getDoc.update({
-      bank_gau_buy: fixNumber(resGAUBuy),
-      bank_gau_sell: fixNumber(resGAUSell),
-      bank_gau_rate: fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy)),
-      bank_gau_update: fire.firestore.Timestamp.fromDate(new Date()),
-    })
+    let bank_gau_buy = fixNumber(resGAUBuy)
+    let bank_gau_sell = fixNumber(resGAUSell)
+    let bank_gau_rate = fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy))
 
+    let create_data = `INSERT INTO realtime_gau (bank_id,gau_buy,gau_sell,gau_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_gau_buy}','${bank_gau_sell}','${bank_gau_rate}')`
+
+    let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+    db(update_data)
+
+    console.log('Realtime GAU added!')
     console.log(
-      `IngBank - GAU = Alış : ${resGAUBuy} TL / Satış: ${resGAUSell} TL`,
+      `IngBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: INGBank -> Altın')
+    TegAction('Hey Profesör! Problem: INGBank -> Altın')
   }
 }
 
 export default function getIngBankForex() {
   return (
-    getIngBankUSD() + getIngBankEUR() + getIngBankGAU() + getIngBankEURUSD()
+    getIngBankUSD() + getIngBankEUR() + getIngBankGAU() + getIngBankEURUSD() + db(update_sql)
   )
 }

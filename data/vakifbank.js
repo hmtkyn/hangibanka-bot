@@ -1,17 +1,19 @@
 import axios from 'axios'
 import cheerio from 'cheerio'
 import TegAction from '../functions/telegram'
-import fire from '../functions/firestore'
+import db from './../functions/mysql'
 import fixNumber from '../functions/numberfix'
 
-const db = fire.firestore()
+const b_name = "VakıfBank"
+const b_slug = "vakifbank"
+const b_url = "https://www.vakifbank.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/vakif_logo.jpg"
+const b_type_capital = "Kamu"
+const b_type_service = "Mevduat"
 
-const getDoc = db.collection('fxt_bank').doc('fxt_vakifbank')
-const setBankData = getDoc.update({
-  bank_name: 'VakıfBank',
-  bank_img:
-    'https://firebasestorage.googleapis.com/v0/b/forextakip-web.appspot.com/o/bank%2Fvakif_logo.png?alt=media&token=fc1a89b3-1b7a-4242-bc0c-3642dd16e3de',
-})
+let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
+
+let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
 const getURL =
   'https://subesizbankacilik.vakifbank.com.tr/gunlukfinans/SubesizBankacilik/GunlukDovizKurlari.aspx'
@@ -26,7 +28,7 @@ async function getHTML(url) {
     return html
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: VakıfBank')
+    TegAction('Hey Profesör! Problem: VakıfBank')
   }
 }
 
@@ -51,17 +53,21 @@ export async function getVakifBankUSD() {
   const pVakifBankAlisUSD = await getVakifBankAlisUSD(html)
   const pVakifBankSatisUSD = await getVakifBankSatisUSD(html)
 
-  const setUSD = getDoc.update({
-    bank_usd_buy: fixNumber(pVakifBankAlisUSD),
-    bank_usd_sell: fixNumber(pVakifBankSatisUSD),
-    bank_usd_rate: fixNumber(
-      fixNumber(pVakifBankSatisUSD) - fixNumber(pVakifBankAlisUSD),
-    ),
-    bank_usd_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_usd_buy = fixNumber(pVakifBankAlisUSD)
+  let bank_usd_sell = fixNumber(pVakifBankSatisUSD)
+  let bank_usd_rate = fixNumber(
+    fixNumber(pVakifBankSatisUSD) - fixNumber(pVakifBankAlisUSD)
+  )
 
+  let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+
+  let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime USD added!')
   console.log(
-    `VakifBank - USD = Alış : ${pVakifBankAlisUSD} TL / Satış: ${pVakifBankSatisUSD} TL`,
+    `VakifBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
   )
 }
 
@@ -86,17 +92,22 @@ export async function getVakifBankEUR() {
   const pVakifBankAlisEUR = await getVakifBankAlisEUR(html)
   const pVakifBankSatisEUR = await getVakifBankSatisEUR(html)
 
-  const setEUR = getDoc.update({
-    bank_eur_buy: fixNumber(pVakifBankAlisEUR),
-    bank_eur_sell: fixNumber(pVakifBankSatisEUR),
-    bank_eur_rate: fixNumber(
-      fixNumber(pVakifBankSatisEUR) - fixNumber(pVakifBankAlisEUR),
-    ),
-    bank_eur_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
 
+  let bank_eur_buy = fixNumber(pVakifBankAlisEUR)
+  let bank_eur_sell = fixNumber(pVakifBankSatisEUR)
+  let bank_eur_rate = fixNumber(
+    fixNumber(pVakifBankSatisEUR) - fixNumber(pVakifBankAlisEUR)
+  )
+
+  let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
+
+  let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime EUR added!')
   console.log(
-    `VakifBank - EUR = Alış : ${pVakifBankAlisEUR} TL / Satış: ${pVakifBankSatisEUR} TL`,
+    `VakifBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
   )
 }
 
@@ -107,26 +118,26 @@ export async function getVakifBankEURUSD() {
   const pVakifBankAlisUSD = await getVakifBankAlisUSD(html)
   const pVakifBankSatisUSD = await getVakifBankSatisUSD(html)
 
-  const setEURUSD = getDoc.update({
-    bank_eurusd_buy: fixNumber(
-      fixNumber(pVakifBankAlisEUR) / fixNumber(pVakifBankAlisUSD),
-    ),
-    bank_eurusd_sell: fixNumber(
-      fixNumber(pVakifBankSatisEUR) / fixNumber(pVakifBankSatisUSD),
-    ),
-    bank_eurusd_rate: fixNumber(
-      fixNumber(fixNumber(pVakifBankSatisEUR) / fixNumber(pVakifBankSatisUSD)) -
-      fixNumber(fixNumber(pVakifBankAlisEUR) / fixNumber(pVakifBankAlisUSD)),
-    ),
-    bank_eurusd_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_eurusd_buy = fixNumber(
+    fixNumber(pVakifBankAlisEUR) / fixNumber(pVakifBankAlisUSD)
+  )
+  let bank_eurusd_sell = fixNumber(
+    fixNumber(pVakifBankSatisEUR) / fixNumber(pVakifBankSatisUSD)
+  )
+  let bank_eurusd_rate = fixNumber(
+    fixNumber(fixNumber(pVakifBankSatisEUR) / fixNumber(pVakifBankSatisUSD)) -
+    fixNumber(fixNumber(pVakifBankAlisEUR) / fixNumber(pVakifBankAlisUSD))
+  )
 
+  let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
+
+  let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime EUR/USD added!')
   console.log(
-    `VakifBank - EUR/USD = Alış : ${fixNumber(
-      fixNumber(pVakifBankAlisEUR) / fixNumber(pVakifBankAlisUSD),
-    )} $ / Satış: ${fixNumber(
-      fixNumber(pVakifBankSatisEUR) / fixNumber(pVakifBankSatisUSD),
-    )} $`,
+    `VakifBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
   )
 }
 
@@ -143,7 +154,7 @@ async function getGAUHTML(url) {
     return html
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: VakıfBank - Altın')
+    TegAction('Hey Profesör! Problem: VakıfBank - Altın')
   }
 }
 
@@ -168,17 +179,21 @@ export async function getVakifBankGAU() {
   const pVakifBankAlisGAU = await getVakifBankAlisGAU(html)
   const pVakifBankSatisGAU = await getVakifBankSatisGAU(html)
 
-  const setGAU = getDoc.update({
-    bank_gau_buy: fixNumber(pVakifBankAlisGAU),
-    bank_gau_sell: fixNumber(pVakifBankSatisGAU),
-    bank_gau_rate: fixNumber(
-      fixNumber(pVakifBankSatisGAU) - fixNumber(pVakifBankAlisGAU),
-    ),
-    bank_gau_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_gau_buy = fixNumber(pVakifBankAlisGAU)
+  let bank_gau_sell = fixNumber(pVakifBankSatisGAU)
+  let bank_gau_rate = fixNumber(
+    fixNumber(pVakifBankSatisGAU) - fixNumber(pVakifBankAlisGAU)
+  )
 
+  let create_data = `INSERT INTO realtime_gau (bank_id,gau_buy,gau_sell,gau_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_gau_buy}','${bank_gau_sell}','${bank_gau_rate}')`
+
+  let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime GAU added!')
   console.log(
-    `VakifBank - GAU = Alış : ${pVakifBankAlisGAU} TL / Satış: ${pVakifBankSatisGAU} TL`,
+    `VakifBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
   )
 }
 
@@ -187,6 +202,7 @@ export default function getVakifBankForex() {
     getVakifBankUSD() +
     getVakifBankEUR() +
     getVakifBankGAU() +
-    getVakifBankEURUSD()
+    getVakifBankEURUSD() +
+    db(update_sql)
   )
 }

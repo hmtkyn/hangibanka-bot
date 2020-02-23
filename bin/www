@@ -7,10 +7,6 @@ import app from './../app'
 import debug from 'debug'
 import http from 'http'
 
-// var app = require('../app');
-// var debug = require('debug')('express-app:server');
-// var http = require('http');
-
 /**
  * Get port from environment and store in Express.
  */
@@ -23,6 +19,11 @@ app.set('port', port);
  */
 
 const server = http.createServer(app);
+
+/* io.on('connection', function (socket) {
+  console.log('a user is connected');
+  socket.emit('usd', 'results');
+}) */
 
 /**
  * Listen on provided port, on all network interfaces.

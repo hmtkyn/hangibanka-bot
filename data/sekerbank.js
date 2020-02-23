@@ -1,17 +1,19 @@
 import axios from 'axios'
 import cheerio from 'cheerio'
 import TegAction from '../functions/telegram'
-import fire from '../functions/firestore'
+import db from './../functions/mysql'
 import fixNumber from '../functions/numberfix'
 
-const db = fire.firestore()
+const b_name = "ŞekerBank"
+const b_slug = "sekerbank"
+const b_url = "https://www.sekerbank.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/seker_logo.jpg"
+const b_type_capital = "Özel"
+const b_type_service = "Mevduat"
 
-const getDoc = db.collection('fxt_bank').doc('fxt_sekerbank')
-const setBankData = getDoc.update({
-  bank_name: 'ŞekerBank',
-  bank_img:
-    'https://firebasestorage.googleapis.com/v0/b/forextakip-web.appspot.com/o/bank%2Fseker_logo.jpg?alt=media&token=8c17b812-4b4b-47aa-8b80-799e3d27fb49',
-})
+let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
+
+let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
 const getURL =
   'https://sube.sekerbank.com.tr/web/servlet/SekerbankServlet?service=SBkurlarOranlar.ButundovizKurlariListele&DISKURUM=ODC'
@@ -26,7 +28,7 @@ async function getHTML(url) {
     return html
   } catch (error) {
     console.error(error)
-    TegAction(767580569, 'Hey Profesör! Problem: ŞekerBank')
+    TegAction('Hey Profesör! Problem: ŞekerBank')
   }
 }
 
@@ -51,17 +53,21 @@ export async function getSekerBankUSD() {
   const pSekerBankAlisUSD = await getSekerBankAlisUSD(html)
   const pSekerBankSatisUSD = await getSekerBankSatisUSD(html)
 
-  const setUSD = getDoc.update({
-    bank_usd_buy: fixNumber(pSekerBankAlisUSD),
-    bank_usd_sell: fixNumber(pSekerBankSatisUSD),
-    bank_usd_rate: fixNumber(
-      fixNumber(pSekerBankSatisUSD) - fixNumber(pSekerBankAlisUSD),
-    ),
-    bank_usd_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_usd_buy = fixNumber(pSekerBankAlisUSD)
+  let bank_usd_sell = fixNumber(pSekerBankSatisUSD)
+  let bank_usd_rate = fixNumber(
+    fixNumber(pSekerBankSatisUSD) - fixNumber(pSekerBankAlisUSD)
+  )
 
+  let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+
+  let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime USD added!')
   console.log(
-    `SekerBank - USD = Alış : ${pSekerBankAlisUSD} TL / Satış: ${pSekerBankSatisUSD} TL`,
+    `SekerBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
   )
 }
 
@@ -86,17 +92,21 @@ export async function getSekerBankEUR() {
   const pSekerBankAlisEUR = await getSekerBankAlisEUR(html)
   const pSekerBankSatisEUR = await getSekerBankSatisEUR(html)
 
-  const setEUR = getDoc.update({
-    bank_eur_buy: fixNumber(pSekerBankAlisEUR),
-    bank_eur_sell: fixNumber(pSekerBankSatisEUR),
-    bank_eur_rate: fixNumber(
-      fixNumber(pSekerBankSatisEUR) - fixNumber(pSekerBankAlisEUR),
-    ),
-    bank_eur_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_eur_buy = fixNumber(pSekerBankAlisEUR)
+  let bank_eur_sell = fixNumber(pSekerBankSatisEUR)
+  let bank_eur_rate = fixNumber(
+    fixNumber(pSekerBankSatisEUR) - fixNumber(pSekerBankAlisEUR)
+  )
 
+  let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
+
+  let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime EUR added!')
   console.log(
-    `SekerBank - EUR = Alış : ${pSekerBankAlisEUR} TL / Satış: ${pSekerBankSatisEUR} TL`,
+    `SekerBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
   )
 }
 
@@ -107,29 +117,29 @@ export async function getSekerBankEURUSD() {
   const pSekerBankAlisUSD = await getSekerBankAlisUSD(html)
   const pSekerBankSatisUSD = await getSekerBankSatisUSD(html)
 
-  const setEURUSD = getDoc.update({
-    bank_eurusd_buy: fixNumber(
-      fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD),
-    ),
-    bank_eurusd_sell: fixNumber(
-      fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD),
-    ),
-    bank_eurusd_rate: fixNumber(
-      fixNumber(fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD)) -
-      fixNumber(fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD)),
-    ),
-    bank_eurusd_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_eurusd_buy = fixNumber(
+    fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD)
+  )
+  let bank_eurusd_sell = fixNumber(
+    fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD)
+  )
+  let bank_eurusd_rate = fixNumber(
+    fixNumber(fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD)) -
+    fixNumber(fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD))
+  )
 
+  let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
+
+  let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime EUR/USD added!')
   console.log(
-    `SekerBank - EUR/USD = Alış : ${fixNumber(
-      fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD),
-    )} $ / Satış: ${fixNumber(
-      fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD),
-    )} $`,
+    `SekerBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
   )
 }
 
 export default function getSekerBankForex() {
-  return getSekerBankUSD() + getSekerBankEUR() + getSekerBankEURUSD()
+  return (getSekerBankUSD() + getSekerBankEUR() + getSekerBankEURUSD() + db(update_sql))
 }

@@ -1,17 +1,19 @@
 import axios from 'axios'
 import cheerio from 'cheerio'
 import TegAction from '../functions/telegram'
-import fire from '../functions/firestore'
+import db from './../functions/mysql'
 import fixNumber from '../functions/numberfix'
 
-const db = fire.firestore()
+const b_name = "HalkBank"
+const b_slug = "halkbank"
+const b_url = "https://www.halkbank.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/halk_logo.jpg"
+const b_type_capital = "Kamu"
+const b_type_service = "Mevduat"
 
-const getDoc = db.collection('fxt_bank').doc('fxt_halkbank')
-const setBankData = getDoc.update({
-  bank_name: 'HalkBank',
-  bank_img:
-    'https://firebasestorage.googleapis.com/v0/b/forextakip-web.appspot.com/o/bank%2Fhalk_logo.jpg?alt=media&token=a20ee709-45a8-4835-b58d-1a7f6ae41a89',
-})
+let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
+
+let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
 const getURL = 'https://www.halkbank.com.tr'
 
@@ -24,7 +26,7 @@ async function getHTML(url) {
     })
     return html
   } catch (error) {
-    TegAction(767580569, 'Hey Profesör! Problem: Halkbank')
+    TegAction('Hey Profesör! Problem: Halkbank')
   }
 }
 
@@ -49,17 +51,21 @@ export async function getHalkBankUSD() {
   const pHalkBankAlisUSD = await getHalkBankAlisUSD(html)
   const pHalkBankSatisUSD = await getHalkBankSatisUSD(html)
 
-  const setUSD = getDoc.update({
-    bank_usd_buy: fixNumber(pHalkBankAlisUSD),
-    bank_usd_sell: fixNumber(pHalkBankSatisUSD),
-    bank_usd_rate: fixNumber(
-      fixNumber(pHalkBankSatisUSD) - fixNumber(pHalkBankAlisUSD),
-    ),
-    bank_usd_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_usd_buy = fixNumber(pHalkBankAlisUSD)
+  let bank_usd_sell = fixNumber(pHalkBankSatisUSD)
+  let bank_usd_rate = fixNumber(
+    fixNumber(pHalkBankSatisUSD) - fixNumber(pHalkBankAlisUSD)
+  )
 
+  let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+
+  let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime USD added!')
   console.log(
-    `HalkBank - USD = Alış : ${pHalkBankAlisUSD} TL / Satış: ${pHalkBankSatisUSD} TL`,
+    `HalkBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
   )
 }
 
@@ -84,17 +90,21 @@ export async function getHalkBankEUR() {
   const pHalkBankAlisEUR = await getHalkBankAlisEUR(html)
   const pHalkBankSatisEUR = await getHalkBankSatisEUR(html)
 
-  const setEUR = getDoc.update({
-    bank_eur_buy: fixNumber(pHalkBankAlisEUR),
-    bank_eur_sell: fixNumber(pHalkBankSatisEUR),
-    bank_eur_rate: fixNumber(
-      fixNumber(pHalkBankSatisEUR) - fixNumber(pHalkBankAlisEUR),
-    ),
-    bank_eur_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_eur_buy = fixNumber(pHalkBankAlisEUR)
+  let bank_eur_sell = fixNumber(pHalkBankSatisEUR)
+  let bank_eur_rate = fixNumber(
+    fixNumber(pHalkBankSatisEUR) - fixNumber(pHalkBankAlisEUR)
+  )
 
+  let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
+
+  let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime EUR added!')
   console.log(
-    `HalkBank - EUR = Alış : ${pHalkBankAlisEUR} TL / Satış: ${pHalkBankSatisEUR} TL`,
+    `HalkBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
   )
 }
 
@@ -105,26 +115,26 @@ export async function getHalkBankEURUSD() {
   const pHalkBankAlisUSD = await getHalkBankAlisUSD(html)
   const pHalkBankSatisUSD = await getHalkBankSatisUSD(html)
 
-  const setEURUSD = getDoc.update({
-    bank_eurusd_buy: fixNumber(
-      fixNumber(pHalkBankAlisEUR) / fixNumber(pHalkBankAlisUSD),
-    ),
-    bank_eurusd_sell: fixNumber(
-      fixNumber(pHalkBankSatisEUR) / fixNumber(pHalkBankSatisUSD),
-    ),
-    bank_eurusd_rate: fixNumber(
-      fixNumber(fixNumber(pHalkBankSatisEUR) / fixNumber(pHalkBankSatisUSD)) -
-      fixNumber(fixNumber(pHalkBankAlisEUR) / fixNumber(pHalkBankAlisUSD)),
-    ),
-    bank_eurusd_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_eurusd_buy = fixNumber(
+    fixNumber(pHalkBankAlisEUR) / fixNumber(pHalkBankAlisUSD),
+  )
+  let bank_eurusd_sell = fixNumber(
+    fixNumber(pHalkBankSatisEUR) / fixNumber(pHalkBankSatisUSD),
+  )
+  let bank_eurusd_rate = fixNumber(
+    fixNumber(fixNumber(pHalkBankSatisEUR) / fixNumber(pHalkBankSatisUSD)) -
+    fixNumber(fixNumber(pHalkBankAlisEUR) / fixNumber(pHalkBankAlisUSD)),
+  )
 
+  let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
+
+  let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime EUR/USD added!')
   console.log(
-    `HalkBank - EUR/USD = Alış : ${fixNumber(
-      fixNumber(pHalkBankAlisEUR) / fixNumber(pHalkBankAlisUSD),
-    )} $ / Satış: ${fixNumber(
-      fixNumber(pHalkBankSatisEUR) / fixNumber(pHalkBankSatisUSD),
-    )} $`,
+    `HalkBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
   )
 }
 
@@ -149,22 +159,26 @@ export async function getHalkBankGAU() {
   const pHalkBankAlisGAU = await getHalkBankAlisGAU(html)
   const pHalkBankSatisGAU = await getHalkBankSatisGAU(html)
 
-  const setGAU = getDoc.update({
-    bank_gau_buy: fixNumber(pHalkBankAlisGAU),
-    bank_gau_sell: fixNumber(pHalkBankSatisGAU),
-    bank_gau_rate: fixNumber(
-      fixNumber(pHalkBankSatisGAU) - fixNumber(pHalkBankAlisGAU),
-    ),
-    bank_gau_update: fire.firestore.Timestamp.fromDate(new Date()),
-  })
+  let bank_gau_buy = fixNumber(pHalkBankAlisGAU)
+  let bank_gau_sell = fixNumber(pHalkBankSatisGAU)
+  let bank_gau_rate = fixNumber(
+    fixNumber(pHalkBankSatisGAU) - fixNumber(pHalkBankAlisGAU)
+  )
 
+  let create_data = `INSERT INTO realtime_gau (bank_id,gau_buy,gau_sell,gau_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_gau_buy}','${bank_gau_sell}','${bank_gau_rate}')`
+
+  let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+
+  db(update_data)
+
+  console.log('Realtime GAU added!')
   console.log(
-    `HalkBank - GAU = Alış : ${pHalkBankAlisGAU} TL / Satış: ${pHalkBankSatisGAU} TL`,
+    `HalkBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`
   )
 }
 
 export default function getHalkBankForex() {
   return (
-    getHalkBankUSD() + getHalkBankEUR() + getHalkBankGAU() + getHalkBankEURUSD()
+    getHalkBankUSD() + getHalkBankEUR() + getHalkBankGAU() + getHalkBankEURUSD() + db(update_sql)
   )
 }

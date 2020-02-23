@@ -4,24 +4,22 @@
   "description": "Hangibank Web Application",
   "private": true,
   "dependencies": {
-    "@firebase/firestore": "latest",
-    "axios": "latest",
-    "cheerio": "latest",
-    "cookie-parser": "latest",
-    "cross-env": "latest",
-    "debug": "latest",
-    "dotenv": "latest",
-    "esm": "latest",
-    "express": "latest",
-    "firebase": "latest",
-    "firebase-admin": "latest",
-    "http-errors": "latest",
-    "jade": "latest",
-    "morgan": "latest",
-    "node-cron": "latest",
-    "telegraf": "latest"
+    "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.3",
+    "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.0",
+    "debug": "^4.1.1",
+    "dotenv": "^8.2.0",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "http-errors": "^1.7.3",
+    "mysql": "^2.18.1",
+    "node-cron": "^2.0.3",
+    "telegraf": "^3.36.0"
   },
   "scripts": {
-    "start": "node -r esm ./bin/www"
+    "app": "node -r esm ./bin/www"
   }
 }
