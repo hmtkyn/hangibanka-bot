@@ -1,7 +1,7 @@
 import axios from 'axios'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+import TegAction from '../../functions/telegram'
+import db from '../../functions/mysql'
+import fixNumber from '../../functions/numberfix'
 
 const b_name = "Yapı Kredi"
 const b_slug = "yapikredi"

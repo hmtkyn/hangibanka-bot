@@ -1,7 +1,7 @@
-import axios from 'axios'
-import TegAction from './../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from './../functions/numberfix'
+const axios = require('axios');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
 const b_name = "Albaraka Türk"
 const b_slug = "albaraka"
@@ -16,7 +16,7 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-export async function getAlBarakaTurkBankUSD() {
+async function getAlBarakaTurkBankUSD() {
   try {
 
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
@@ -44,7 +44,7 @@ export async function getAlBarakaTurkBankUSD() {
   }
 }
 
-export async function getAlBarakaTurkBankEUR() {
+async function getAlBarakaTurkBankEUR() {
   try {
 
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
@@ -72,7 +72,7 @@ export async function getAlBarakaTurkBankEUR() {
   }
 }
 
-export async function getAlBarakaTurkBankEURUSD() {
+async function getAlBarakaTurkBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
@@ -106,7 +106,7 @@ export async function getAlBarakaTurkBankEURUSD() {
   }
 }
 
-export async function getAlBarakaTurkBankGAU() {
+async function getAlBarakaTurkBankGAU() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
@@ -133,6 +133,8 @@ export async function getAlBarakaTurkBankGAU() {
   }
 }
 
-export default function getAlBarakaTurkBankForex() {
+function getAlBarakaTurkBankForex() {
   return (getAlBarakaTurkBankUSD() + getAlBarakaTurkBankEUR() + getAlBarakaTurkBankGAU() + getAlBarakaTurkBankEURUSD() + db(update_sql))
 }
+
+module.exports = getAlBarakaTurkBankForex;

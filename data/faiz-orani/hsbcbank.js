@@ -1,12 +1,12 @@
 import axios from 'axios'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+import TegAction from '../../functions/telegram'
+import db from '../../functions/mysql'
+import fixNumber from '../../functions/numberfix'
 
-const b_name = "İş Bank"
-const b_slug = "isbank"
-const b_url = "https://www.isbank.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/is_logo.jpg"
+const b_name = "HSBC Bank"
+const b_slug = "hsbc"
+const b_url = "https://www.hsbc.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/hsbc_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -14,31 +14,15 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-let fixUTCMonth = new Date().getUTCMonth()
+const getURL = 'http://www.hsbcyatirim.com.tr/api/hsbcdata/getForeignCurrencies'
+const getGAUUrl = 'http://www.hsbcyatirim.com.tr/api/hsbcdata/getGoldData'
 
-let fixUTCFullTime =
-  new Date().getUTCFullYear() +
-  '-' +
-  ++fixUTCMonth +
-  '-' +
-  new Date().getUTCDate()
-
-let fixUTCFullTimeConvert = Date.now()
-
-let getURL =
-  'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FxRatesHandler.ashx?Lang=tr&fxRateType=INTERACTIVE&date=' +
-  fixUTCFullTime +
-  '&time=' +
-  fixUTCFullTimeConvert +
-  ''
-let getGauURL = 'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FinancialDashboardHandler.ashx?time=' + fixUTCFullTimeConvert + ''
-
-export async function getIsBankUSD() {
+export async function getHSBCBankUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
-    const resUSDBuy = resData[0]['fxRateBuy']
-    const resUSDSell = resData[0]['fxRateSell']
+    const resUSDBuy = resData[0]['HsbcBuy']
+    const resUSDSell = resData[0]['HsbcSell']
 
     let bank_usd_buy = fixNumber(resUSDBuy)
     let bank_usd_sell = fixNumber(resUSDSell)
@@ -52,20 +36,20 @@ export async function getIsBankUSD() {
 
     console.log('Realtime USD added!')
     console.log(
-      `IsBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
+      `HSBCBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: IsBank -> Dolar')
+    TegAction('Hey Profesör! Problem: HSBCBank -> Dolar')
   }
 }
 
-export async function getIsBankEUR() {
+export async function getHSBCBankEUR() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
-    const resEURBuy = resData[1]['fxRateBuy']
-    const resEURSell = resData[1]['fxRateSell']
+    const resEURBuy = resData[1]['HsbcBuy']
+    const resEURSell = resData[1]['HsbcSell']
 
     let bank_eur_buy = fixNumber(resEURBuy)
     let bank_eur_sell = fixNumber(resEURSell)
@@ -79,22 +63,22 @@ export async function getIsBankEUR() {
 
     console.log('Realtime EUR added!')
     console.log(
-      `IsBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
+      `HSBCBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: IsBank -> Euro')
+    TegAction('Hey Profesör! Problem: HSBCBank -> Euro')
   }
 }
 
-export async function getIsBankEURUSD() {
+export async function getHSBCBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
-    const resEURBuy = resData[1]['fxRateBuy']
-    const resEURSell = resData[1]['fxRateSell']
-    const resUSDBuy = resData[0]['fxRateBuy']
-    const resUSDSell = resData[0]['fxRateSell']
+    const resEURBuy = resData[1]['HsbcBuy']
+    const resEURSell = resData[1]['HsbcSell']
+    const resUSDBuy = resData[0]['HsbcBuy']
+    const resUSDSell = resData[0]['HsbcSell']
 
     let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
     let bank_eurusd_sell = fixNumber(
@@ -113,20 +97,24 @@ export async function getIsBankEURUSD() {
 
     console.log('Realtime EUR/USD added!')
     console.log(
-      `IsBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
+      `HSBCBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: IsBank -> Euro/Dolar')
+    TegAction('Hey Profesör! Problem: HSBCBank -> Euro/Dolar')
   }
 }
 
-export async function getIsBankGAU() {
+export async function getHSBCBankGAU() {
   try {
-    const response = await axios({ method: 'get', url: getGauURL, timeout: 5000 })
+    const response = await axios({
+      method: 'get',
+      url: getGAUUrl,
+      timeout: 5000,
+    })
     const resData = response.data
-    const resGAUBuy = resData['Market'][2]['FxRateBuy']
-    const resGAUSell = resData['Market'][2]['FxRateSell']
+    const resGAUBuy = resData[3]['Buy']
+    const resGAUSell = resData[3]['Sell']
 
     let bank_gau_buy = fixNumber(resGAUBuy)
     let bank_gau_sell = fixNumber(resGAUSell)
@@ -140,14 +128,16 @@ export async function getIsBankGAU() {
 
     console.log('Realtime GAU added!')
     console.log(
-      `IsBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
+      `HSBCBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: IsBank -> Altın')
+    TegAction('Hey Profesör! Problem: HSBCBank -> Altın')
   }
 }
 
-export default function getIsBankForex() {
-  return (getIsBankUSD() + getIsBankEUR() + getIsBankEURUSD() + getIsBankGAU() + db(update_sql))
+export default function getHSBCBankForex() {
+  return (
+    getHSBCBankUSD() + getHSBCBankEUR() + getHSBCBankGAU() + getHSBCBankEURUSD() + db(update_sql)
+  )
 }

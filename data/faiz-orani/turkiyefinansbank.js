@@ -1,8 +1,8 @@
 import axios from 'axios'
 import cheerio from 'cheerio'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+import TegAction from '../../functions/telegram'
+import db from '../../functions/mysql'
+import fixNumber from '../../functions/numberfix'
 
 const b_name = "Türkiye Finans"
 const b_slug = "turkiyefinans"

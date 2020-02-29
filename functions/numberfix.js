@@ -1,4 +1,4 @@
-export default function fixNumber (x){
+function fixNumber(x) {
   if (typeof x == 'string' && x.length > 5) {
     var fixed1 = x.substr(0, 6).replace(',', '.')
     var fixed2 = Number.parseFloat(fixed1).toFixed(4)
@@ -11,3 +11,4 @@ export default function fixNumber (x){
     return x.toFixed(4)
   }
 }
+module.exports = fixNumber;

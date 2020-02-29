@@ -1,27 +1,44 @@
-import axios from 'axios'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+const axios = require('axios');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
-const b_name = "Kuveyt Türk"
-const b_slug = "kuveytturk"
-const b_url = "https://www.kuveytturk.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/kuveyt_logo.jpg"
+const b_name = "İş Bank"
+const b_slug = "isbank"
+const b_url = "https://www.isbank.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/is_logo.jpg"
 const b_type_capital = "Özel"
-const b_type_service = "Katılım"
+const b_type_service = "Mevduat"
 
 let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-const getURL = 'https://www.kuveytturk.com.tr/FinancePortal/Exchange/GetAll'
+let fixUTCMonth = new Date().getUTCMonth()
 
-export async function getKuveytTurkBankUSD() {
+let fixUTCFullTime =
+  new Date().getUTCFullYear() +
+  '-' +
+  ++fixUTCMonth +
+  '-' +
+  new Date().getUTCDate()
+
+let fixUTCFullTimeConvert = Date.now()
+
+let getURL =
+  'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FxRatesHandler.ashx?Lang=tr&fxRateType=INTERACTIVE&date=' +
+  fixUTCFullTime +
+  '&time=' +
+  fixUTCFullTimeConvert +
+  ''
+let getGauURL = 'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FinancialDashboardHandler.ashx?time=' + fixUTCFullTimeConvert + ''
+
+async function getIsBankUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
-    const resUSDBuy = resData[1]['BuyRate']
-    const resUSDSell = resData[1]['SellRate']
+    const resUSDBuy = resData[0]['fxRateBuy']
+    const resUSDSell = resData[0]['fxRateSell']
 
     let bank_usd_buy = fixNumber(resUSDBuy)
     let bank_usd_sell = fixNumber(resUSDSell)
@@ -35,20 +52,20 @@ export async function getKuveytTurkBankUSD() {
 
     console.log('Realtime USD added!')
     console.log(
-      `KuveytTurkBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
+      `IsBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: Kuveyt Turk Bank -> Dolar')
+    TegAction('Hey Profesör! Problem: IsBank -> Dolar')
   }
 }
 
-export async function getKuveytTurkBankEUR() {
+async function getIsBankEUR() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
-    const resEURBuy = resData[2]['BuyRate']
-    const resEURSell = resData[2]['SellRate']
+    const resEURBuy = resData[1]['fxRateBuy']
+    const resEURSell = resData[1]['fxRateSell']
 
     let bank_eur_buy = fixNumber(resEURBuy)
     let bank_eur_sell = fixNumber(resEURSell)
@@ -62,22 +79,22 @@ export async function getKuveytTurkBankEUR() {
 
     console.log('Realtime EUR added!')
     console.log(
-      `KuveytTurkBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
+      `IsBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: Kuveyt Turk Bank -> Euro')
+    TegAction('Hey Profesör! Problem: IsBank -> Euro')
   }
 }
 
-export async function getKuveytTurkBankEURUSD() {
+async function getIsBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
     const resData = response.data
-    const resEURBuy = resData[2]['BuyRate']
-    const resEURSell = resData[2]['SellRate']
-    const resUSDBuy = resData[1]['BuyRate']
-    const resUSDSell = resData[1]['SellRate']
+    const resEURBuy = resData[1]['fxRateBuy']
+    const resEURSell = resData[1]['fxRateSell']
+    const resUSDBuy = resData[0]['fxRateBuy']
+    const resUSDSell = resData[0]['fxRateSell']
 
     let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
     let bank_eurusd_sell = fixNumber(
@@ -96,21 +113,20 @@ export async function getKuveytTurkBankEURUSD() {
 
     console.log('Realtime EUR/USD added!')
     console.log(
-      `KuveytTurkBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
+      `IsBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: Kuveyt Turk Bank -> Euro/Dolar',
-    )
+    TegAction('Hey Profesör! Problem: IsBank -> Euro/Dolar')
   }
 }
 
-export async function getKuveytTurkBankGAU() {
+async function getIsBankGAU() {
   try {
-    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
+    const response = await axios({ method: 'get', url: getGauURL, timeout: 5000 })
     const resData = response.data
-    const resGAUBuy = resData[3]['BuyRate']
-    const resGAUSell = resData[3]['SellRate']
+    const resGAUBuy = resData['Market'][2]['FxRateBuy']
+    const resGAUSell = resData['Market'][2]['FxRateSell']
 
     let bank_gau_buy = fixNumber(resGAUBuy)
     let bank_gau_sell = fixNumber(resGAUSell)
@@ -124,20 +140,15 @@ export async function getKuveytTurkBankGAU() {
 
     console.log('Realtime GAU added!')
     console.log(
-      `KuveytTurkBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
+      `IsBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: Kuveyt Turk Bank -> Altın')
+    TegAction('Hey Profesör! Problem: IsBank -> Altın')
   }
 }
 
-export default function getKuveytTurkBankForex() {
-  return (
-    getKuveytTurkBankUSD() +
-    getKuveytTurkBankEUR() +
-    getKuveytTurkBankGAU() +
-    getKuveytTurkBankEURUSD() +
-    db(update_sql)
-  )
+function getIsBankForex() {
+  return (getIsBankUSD() + getIsBankEUR() + getIsBankEURUSD() + getIsBankGAU() + db(update_sql))
 }
+module.exports = getIsBankForex;

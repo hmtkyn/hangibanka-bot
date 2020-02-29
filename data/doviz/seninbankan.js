@@ -1,7 +1,7 @@
-import axios from 'axios'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+const axios = require('axios');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
 const b_name = "SeninBankan"
 const b_slug = "seninbankan"
@@ -18,7 +18,7 @@ let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug
 const getURL = 'https://www.seninbankan.com.tr/Services/ForexService.aspx'
 const fixDate = Date.now()
 
-export async function getSeninBankanUSD() {
+async function getSeninBankanUSD() {
   try {
     const response = await axios({
       method: 'get',
@@ -66,7 +66,7 @@ export async function getSeninBankanUSD() {
   }
 }
 
-export async function getSeninBankanEUR() {
+async function getSeninBankanEUR() {
   try {
     const response = await axios({
       method: 'get',
@@ -114,7 +114,7 @@ export async function getSeninBankanEUR() {
   }
 }
 
-export async function getSeninBankanEURUSD() {
+async function getSeninBankanEURUSD() {
   try {
     const response = await axios({
       method: 'get',
@@ -169,7 +169,7 @@ export async function getSeninBankanEURUSD() {
   }
 }
 
-export async function getSeninBankanGAU() {
+async function getSeninBankanGAU() {
   try {
     const response = await axios({
       method: 'get',
@@ -217,7 +217,7 @@ export async function getSeninBankanGAU() {
   }
 }
 
-export default function getSeninBankanForex() {
+function getSeninBankanForex() {
   return (
     getSeninBankanUSD() +
     getSeninBankanEUR() +
@@ -226,3 +226,5 @@ export default function getSeninBankanForex() {
     db(update_sql)
   )
 }
+
+module.exports = getSeninBankanForex;

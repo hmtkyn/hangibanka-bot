@@ -1,12 +1,12 @@
-import axios from 'axios'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+const axios = require('axios');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
-const b_name = "HSBC Bank"
-const b_slug = "hsbc"
-const b_url = "https://www.hsbc.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/hsbc_logo.jpg"
+const b_name = "Akbank"
+const b_slug = "akbank"
+const b_url = "https://www.akbank.com"
+const b_logo = "https://hangibank.com/assets/img/bank/akbank_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -14,15 +14,15 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-const getURL = 'http://www.hsbcyatirim.com.tr/api/hsbcdata/getForeignCurrencies'
-const getGAUUrl = 'http://www.hsbcyatirim.com.tr/api/hsbcdata/getGoldData'
+const getURL = "https://www.akbank.com/_vti_bin/AkbankServicesSecure/FrontEndServiceSecure.svc/GetCurrencyRates"
 
-export async function getHSBCBankUSD() {
+async function getAkBankUSD() {
   try {
+
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resUSDBuy = resData[0]['HsbcBuy']
-    const resUSDSell = resData[0]['HsbcSell']
+    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
+    const resUSDBuy = resData['cur'][33]['DovizAlis']
+    const resUSDSell = resData['cur'][33]['DovizSatis']
 
     let bank_usd_buy = fixNumber(resUSDBuy)
     let bank_usd_sell = fixNumber(resUSDSell)
@@ -36,20 +36,22 @@ export async function getHSBCBankUSD() {
 
     console.log('Realtime USD added!')
     console.log(
-      `HSBCBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
+      `AkBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: HSBCBank -> Dolar')
+    TegAction('Hey Profesör! Problem: AkBank -> Dolar')
   }
+
 }
 
-export async function getHSBCBankEUR() {
+async function getAkBankEUR() {
   try {
+
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resEURBuy = resData[1]['HsbcBuy']
-    const resEURSell = resData[1]['HsbcSell']
+    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
+    const resEURBuy = resData['cur'][13]['DovizAlis']
+    const resEURSell = resData['cur'][13]['DovizSatis']
 
     let bank_eur_buy = fixNumber(resEURBuy)
     let bank_eur_sell = fixNumber(resEURSell)
@@ -63,30 +65,30 @@ export async function getHSBCBankEUR() {
 
     console.log('Realtime EUR added!')
     console.log(
-      `HSBCBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
+      `AkBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: HSBCBank -> Euro')
+    TegAction('Hey Profesör! Problem: AkBank -> Euro')
   }
 }
 
-export async function getHSBCBankEURUSD() {
+async function getAkBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resEURBuy = resData[1]['HsbcBuy']
-    const resEURSell = resData[1]['HsbcSell']
-    const resUSDBuy = resData[0]['HsbcBuy']
-    const resUSDSell = resData[0]['HsbcSell']
+    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
+    const resEURBuy = resData['cur'][13]['DovizAlis']
+    const resEURSell = resData['cur'][13]['DovizSatis']
+    const resUSDBuy = resData['cur'][33]['DovizAlis']
+    const resUSDSell = resData['cur'][33]['DovizSatis']
 
     let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
     let bank_eurusd_sell = fixNumber(
-      fixNumber(resEURSell) / fixNumber(resUSDSell)
+      fixNumber(resEURSell) / fixNumber(resUSDSell),
     )
     let bank_eurusd_rate = fixNumber(
       fixNumber(fixNumber(resEURSell) / fixNumber(resUSDSell)) -
-      fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
+      fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy)),
     )
 
     let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
@@ -97,24 +99,21 @@ export async function getHSBCBankEURUSD() {
 
     console.log('Realtime EUR/USD added!')
     console.log(
-      `HSBCBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
+      `AkBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: HSBCBank -> Euro/Dolar')
+    TegAction('Hey Profesör! Problem: AkBank -> Euro/Dolar')
   }
 }
 
-export async function getHSBCBankGAU() {
+async function getAkBankGAU() {
+
   try {
-    const response = await axios({
-      method: 'get',
-      url: getGAUUrl,
-      timeout: 5000,
-    })
-    const resData = response.data
-    const resGAUBuy = resData[3]['Buy']
-    const resGAUSell = resData[3]['Sell']
+    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
+    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
+    const resGAUBuy = resData['cur'][35]['DovizAlis']
+    const resGAUSell = resData['cur'][35]['DovizSatis']
 
     let bank_gau_buy = fixNumber(resGAUBuy)
     let bank_gau_sell = fixNumber(resGAUSell)
@@ -128,16 +127,16 @@ export async function getHSBCBankGAU() {
 
     console.log('Realtime GAU added!')
     console.log(
-      `HSBCBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
+      `AkBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: HSBCBank -> Altın')
+    TegAction('Hey Profesör! Problem: AkBank -> GAU')
   }
 }
 
-export default function getHSBCBankForex() {
-  return (
-    getHSBCBankUSD() + getHSBCBankEUR() + getHSBCBankGAU() + getHSBCBankEURUSD() + db(update_sql)
-  )
+function getAkbankForex() {
+  return (getAkBankUSD() + getAkBankEUR() + getAkBankEURUSD() + getAkBankGAU() + db(update_sql))
 }
+
+module.exports = getAkbankForex;

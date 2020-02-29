@@ -1,28 +1,28 @@
 import axios from 'axios'
-import TegAction from './../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+import TegAction from '../../functions/telegram'
+import db from '../../functions/mysql'
+import fixNumber from '../../functions/numberfix'
 
-const b_name = "Akbank"
-const b_slug = "akbank"
-const b_url = "https://www.akbank.com"
-const b_logo = "https://hangibank.com/assets/img/bank/akbank_logo.jpg"
+const b_name = "Albaraka Türk"
+const b_slug = "albaraka"
+const b_url = "https://www.albaraka.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/albarakaturk_logo.jpg"
 const b_type_capital = "Özel"
-const b_type_service = "Mevduat"
+const b_type_service = "Katılım"
+
+const getURL = 'https://www.albaraka.com.tr/forms/currency.json'
 
 let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-const getURL = "https://www.akbank.com/_vti_bin/AkbankServicesSecure/FrontEndServiceSecure.svc/GetCurrencyRates"
-
-export async function getAkBankUSD() {
+export async function getAlBarakaTurkBankUSD() {
   try {
 
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
-    const resUSDBuy = resData['cur'][33]['DovizAlis']
-    const resUSDSell = resData['cur'][33]['DovizSatis']
+    const resData = response.data
+    const resUSDBuy = resData[0]['Alis']
+    const resUSDSell = resData[0]['Satis']
 
     let bank_usd_buy = fixNumber(resUSDBuy)
     let bank_usd_sell = fixNumber(resUSDSell)
@@ -36,22 +36,21 @@ export async function getAkBankUSD() {
 
     console.log('Realtime USD added!')
     console.log(
-      `AkBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
+      `AlBarakaTurkBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: AkBank -> Dolar')
+    TegAction('Hey Profesör! Problem: AlBaraka Türk -> Dolar')
   }
-
 }
 
-export async function getAkBankEUR() {
+export async function getAlBarakaTurkBankEUR() {
   try {
 
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
-    const resEURBuy = resData['cur'][13]['DovizAlis']
-    const resEURSell = resData['cur'][13]['DovizSatis']
+    const resData = response.data
+    const resEURBuy = resData[1]['Alis']
+    const resEURSell = resData[1]['Satis']
 
     let bank_eur_buy = fixNumber(resEURBuy)
     let bank_eur_sell = fixNumber(resEURSell)
@@ -65,22 +64,22 @@ export async function getAkBankEUR() {
 
     console.log('Realtime EUR added!')
     console.log(
-      `AkBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
+      `AlBarakaTurkBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: AkBank -> Euro')
+    TegAction('Hey Profesör! Problem: AlBaraka Türk -> Euro')
   }
 }
 
-export async function getAkBankEURUSD() {
+export async function getAlBarakaTurkBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
-    const resEURBuy = resData['cur'][13]['DovizAlis']
-    const resEURSell = resData['cur'][13]['DovizSatis']
-    const resUSDBuy = resData['cur'][33]['DovizAlis']
-    const resUSDSell = resData['cur'][33]['DovizSatis']
+    const resData = response.data
+    const resEURBuy = resData[1]['Alis']
+    const resEURSell = resData[1]['Satis']
+    const resUSDBuy = resData[0]['Alis']
+    const resUSDSell = resData[0]['Satis']
 
     let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
     let bank_eurusd_sell = fixNumber(
@@ -99,21 +98,20 @@ export async function getAkBankEURUSD() {
 
     console.log('Realtime EUR/USD added!')
     console.log(
-      `AkBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
+      `AlBarakaTurkBank - EUR/USD = Alış : ${bank_eurusd_buy} TL / Satış: ${bank_eurusd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: AkBank -> Euro/Dolar')
+    TegAction('Hey Profesör! Problem: AlBaraka Türk -> Euro/Dolar')
   }
 }
 
-export async function getAkBankGAU() {
-
+export async function getAlBarakaTurkBankGAU() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = JSON.parse(response.data.GetCurrencyRatesResult)
-    const resGAUBuy = resData['cur'][35]['DovizAlis']
-    const resGAUSell = resData['cur'][35]['DovizSatis']
+    const resData = response.data
+    const resGAUBuy = resData[2]['Alis']
+    const resGAUSell = resData[2]['Satis']
 
     let bank_gau_buy = fixNumber(resGAUBuy)
     let bank_gau_sell = fixNumber(resGAUSell)
@@ -127,14 +125,14 @@ export async function getAkBankGAU() {
 
     console.log('Realtime GAU added!')
     console.log(
-      `AkBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`
+      `AlBarakaTurkBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: AkBank -> GAU')
+    TegAction('Hey Profesör! Problem: AlBaraka Türk -> Altın')
   }
 }
 
-export default function getAkbankForex() {
-  return (getAkBankUSD() + getAkBankEUR() + getAkBankEURUSD() + getAkBankGAU() + db(update_sql))
+export default function getAlBarakaTurkBankForex() {
+  return (getAlBarakaTurkBankUSD() + getAlBarakaTurkBankEUR() + getAlBarakaTurkBankGAU() + getAlBarakaTurkBankEURUSD() + db(update_sql))
 }

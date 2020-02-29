@@ -1,12 +1,12 @@
 import axios from 'axios'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+import TegAction from '../../functions/telegram'
+import db from '../../functions/mysql'
+import fixNumber from '../../functions/numberfix'
 
-const b_name = "TEB"
-const b_slug = "teb"
-const b_url = "https://www.teb.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/teb_logo.jpg"
+const b_name = "İş Bank"
+const b_slug = "isbank"
+const b_url = "https://www.isbank.com.tr"
+const b_logo = "https://hangibank.com/assets/img/bank/is_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -14,14 +14,31 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-const getURL = 'https://www.cepteteb.com.tr/services/GetGunlukDovizKur'
+let fixUTCMonth = new Date().getUTCMonth()
 
-export async function getTEBBankUSD() {
+let fixUTCFullTime =
+  new Date().getUTCFullYear() +
+  '-' +
+  ++fixUTCMonth +
+  '-' +
+  new Date().getUTCDate()
+
+let fixUTCFullTimeConvert = Date.now()
+
+let getURL =
+  'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FxRatesHandler.ashx?Lang=tr&fxRateType=INTERACTIVE&date=' +
+  fixUTCFullTime +
+  '&time=' +
+  fixUTCFullTimeConvert +
+  ''
+let getGauURL = 'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FinancialDashboardHandler.ashx?time=' + fixUTCFullTimeConvert + ''
+
+export async function getIsBankUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data.result
-    const resUSDBuy = resData[0]['tebAlis']
-    const resUSDSell = resData[0]['tebSatis']
+    const resData = response.data
+    const resUSDBuy = resData[0]['fxRateBuy']
+    const resUSDSell = resData[0]['fxRateSell']
 
     let bank_usd_buy = fixNumber(resUSDBuy)
     let bank_usd_sell = fixNumber(resUSDSell)
@@ -35,20 +52,20 @@ export async function getTEBBankUSD() {
 
     console.log('Realtime USD added!')
     console.log(
-      `TEBBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
+      `IsBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: TEB Bank -> Dolar')
+    TegAction('Hey Profesör! Problem: IsBank -> Dolar')
   }
 }
 
-export async function getTEBBankEUR() {
+export async function getIsBankEUR() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data.result
-    const resEURBuy = resData[1]['tebAlis']
-    const resEURSell = resData[1]['tebSatis']
+    const resData = response.data
+    const resEURBuy = resData[1]['fxRateBuy']
+    const resEURSell = resData[1]['fxRateSell']
 
     let bank_eur_buy = fixNumber(resEURBuy)
     let bank_eur_sell = fixNumber(resEURSell)
@@ -62,22 +79,22 @@ export async function getTEBBankEUR() {
 
     console.log('Realtime EUR added!')
     console.log(
-      `TEBBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
+      `IsBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: TEB Bank -> Euro')
+    TegAction('Hey Profesör! Problem: IsBank -> Euro')
   }
 }
 
-export async function getTEBBankEURUSD() {
+export async function getIsBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data.result
-    const resEURBuy = resData[1]['tebAlis']
-    const resEURSell = resData[1]['tebSatis']
-    const resUSDBuy = resData[0]['tebAlis']
-    const resUSDSell = resData[0]['tebSatis']
+    const resData = response.data
+    const resEURBuy = resData[1]['fxRateBuy']
+    const resEURSell = resData[1]['fxRateSell']
+    const resUSDBuy = resData[0]['fxRateBuy']
+    const resUSDSell = resData[0]['fxRateSell']
 
     let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
     let bank_eurusd_sell = fixNumber(
@@ -96,22 +113,20 @@ export async function getTEBBankEURUSD() {
 
     console.log('Realtime EUR/USD added!')
     console.log(
-      `TEBBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
+      `IsBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: TEB Bank -> Euro/Dolar')
+    TegAction('Hey Profesör! Problem: IsBank -> Euro/Dolar')
   }
 }
 
-const getGAUUrl = 'https://www.cepteteb.com.tr/services/GetGunlukAltinKur'
-
-export async function getTEBBankGAU() {
+export async function getIsBankGAU() {
   try {
-    const response = await axios({ method: 'get', url: getGAUUrl, timeout: 5000 })
-    const resData = response.data.result
-    const resGAUBuy = resData[0]['alisFiyat']
-    const resGAUSell = resData[0]['satisFiyat']
+    const response = await axios({ method: 'get', url: getGauURL, timeout: 5000 })
+    const resData = response.data
+    const resGAUBuy = resData['Market'][2]['FxRateBuy']
+    const resGAUSell = resData['Market'][2]['FxRateSell']
 
     let bank_gau_buy = fixNumber(resGAUBuy)
     let bank_gau_sell = fixNumber(resGAUSell)
@@ -125,16 +140,14 @@ export async function getTEBBankGAU() {
 
     console.log('Realtime GAU added!')
     console.log(
-      `TEBBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
+      `IsBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
     )
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: TEBBank -> Altın')
+    TegAction('Hey Profesör! Problem: IsBank -> Altın')
   }
 }
 
-export default function getTEBBankForex() {
-  return (
-    getTEBBankUSD() + getTEBBankEUR() + getTEBBankGAU() + getTEBBankEURUSD() + db(update_sql)
-  )
+export default function getIsBankForex() {
+  return (getIsBankUSD() + getIsBankEUR() + getIsBankEURUSD() + getIsBankGAU() + db(update_sql))
 }

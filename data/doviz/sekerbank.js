@@ -1,8 +1,8 @@
-import axios from 'axios'
-import cheerio from 'cheerio'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+const axios = require('axios');
+const cheerio = require('cheerio');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
 const b_name = "ŞekerBank"
 const b_slug = "sekerbank"
@@ -48,7 +48,7 @@ async function getSekerBankSatisUSD(html) {
   return SekerBankSatisUSD
 }
 
-export async function getSekerBankUSD() {
+async function getSekerBankUSD() {
   const html = await getHTML(getURL)
   const pSekerBankAlisUSD = await getSekerBankAlisUSD(html)
   const pSekerBankSatisUSD = await getSekerBankSatisUSD(html)
@@ -87,7 +87,7 @@ async function getSekerBankSatisEUR(html) {
   return SekerBankSatisEUR
 }
 
-export async function getSekerBankEUR() {
+async function getSekerBankEUR() {
   const html = await getHTML(getURL)
   const pSekerBankAlisEUR = await getSekerBankAlisEUR(html)
   const pSekerBankSatisEUR = await getSekerBankSatisEUR(html)
@@ -110,7 +110,7 @@ export async function getSekerBankEUR() {
   )
 }
 
-export async function getSekerBankEURUSD() {
+async function getSekerBankEURUSD() {
   const html = await getHTML(getURL)
   const pSekerBankAlisEUR = await getSekerBankAlisEUR(html)
   const pSekerBankSatisEUR = await getSekerBankSatisEUR(html)
@@ -140,6 +140,8 @@ export async function getSekerBankEURUSD() {
   )
 }
 
-export default function getSekerBankForex() {
+function getSekerBankForex() {
   return (getSekerBankUSD() + getSekerBankEUR() + getSekerBankEURUSD() + db(update_sql))
 }
+
+module.exports = getSekerBankForex;

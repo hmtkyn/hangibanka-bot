@@ -1,5 +1,5 @@
-import TegAction from './../functions/telegram'
-import db from './../functions/mysql'
+import TegAction from '../../functions/telegram'
+import db from '../../functions/mysql'
 
 export async function archiveUSD() {
   try {

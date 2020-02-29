@@ -1,9 +1,9 @@
-import express from 'express'
-import bodyParser from 'body-parser'
-import cors from 'cors'
-import mysql from 'mysql'
-import dotenv from 'dotenv'
-import goCron from './data'
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const mysql = require('mysql');
+const dotenv = require('dotenv');
+const Doviz = require('./data/doviz');
 
 dotenv.config({ path: __dirname + '/functions/.env' })
 
@@ -21,7 +21,7 @@ const dbconnect = mysql.createConnection({
 
 const app = express();
 
-goCron();
+Doviz();
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -141,4 +141,4 @@ app.get('/gau/:bank_slug/archive', (req, res) => {
 })
 // ARCHIVE SINGLE BANK END
 
-export default app
+module.exports = app;

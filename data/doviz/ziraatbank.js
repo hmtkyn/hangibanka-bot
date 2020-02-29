@@ -1,8 +1,8 @@
-import axios from 'axios'
-import cheerio from 'cheerio'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+const axios = require('axios');
+const cheerio = require('cheerio');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
 const b_name = "ZiraatBank"
 const b_slug = "ziraatbank"
@@ -47,7 +47,7 @@ async function getZiraatBankSatisUSD(html) {
   return ZiraatBankSatisUSD
 }
 
-export async function getZiraatBankUSD() {
+async function getZiraatBankUSD() {
   const html = await getHTML(getURL)
   const pZiraatBankAlisUSD = await getZiraatBankAlisUSD(html)
   const pZiraatBankSatisUSD = await getZiraatBankSatisUSD(html)
@@ -86,7 +86,7 @@ async function getZiraatBankSatisEUR(html) {
   return ZiraatBankSatisEUR
 }
 
-export async function getZiraatBankEUR() {
+async function getZiraatBankEUR() {
   const html = await getHTML(getURL)
   const pZiraatBankAlisEUR = await getZiraatBankAlisEUR(html)
   const pZiraatBankSatisEUR = await getZiraatBankSatisEUR(html)
@@ -109,7 +109,7 @@ export async function getZiraatBankEUR() {
   )
 }
 
-export async function getZiraatBankEURUSD() {
+async function getZiraatBankEURUSD() {
   const html = await getHTML(getURL)
   const pZiraatBankAlisEUR = await getZiraatBankAlisEUR(html)
   const pZiraatBankSatisEUR = await getZiraatBankSatisEUR(html)
@@ -159,7 +159,7 @@ async function getZiraatBankSatisGAU(html) {
   return ZiraatBankSatisGAU
 }
 
-export async function getZiraatBankGAU() {
+async function getZiraatBankGAU() {
   const html = await getHTML(getURL)
   const pZiraatBankAlisGAU = await getZiraatBankAlisGAU(html)
   const pZiraatBankSatisGAU = await getZiraatBankSatisGAU(html)
@@ -182,7 +182,7 @@ export async function getZiraatBankGAU() {
   )
 }
 
-export default function getZiraatBankForex() {
+function getZiraatBankForex() {
   return (
     getZiraatBankUSD() +
     getZiraatBankEUR() +
@@ -191,3 +191,4 @@ export default function getZiraatBankForex() {
     db(update_sql)
   )
 }
+module.exports = getZiraatBankForex;

@@ -1,8 +1,8 @@
-import axios from 'axios'
-import cheerio from 'cheerio'
-import TegAction from '../functions/telegram'
-import db from './../functions/mysql'
-import fixNumber from '../functions/numberfix'
+const axios = require('axios');
+const cheerio = require('cheerio');
+const TegAction = require('../../functions/telegram');
+const db = require('../../functions/mysql');
+const fixNumber = require('../../functions/numberfix');
 
 const b_name = "HalkBank"
 const b_slug = "halkbank"
@@ -46,7 +46,7 @@ async function getHalkBankSatisUSD(html) {
   return HalkBankSatisUSD
 }
 
-export async function getHalkBankUSD() {
+async function getHalkBankUSD() {
   const html = await getHTML(getURL)
   const pHalkBankAlisUSD = await getHalkBankAlisUSD(html)
   const pHalkBankSatisUSD = await getHalkBankSatisUSD(html)
@@ -85,7 +85,7 @@ async function getHalkBankSatisEUR(html) {
   return HalkBankSatisEUR
 }
 
-export async function getHalkBankEUR() {
+async function getHalkBankEUR() {
   const html = await getHTML(getURL)
   const pHalkBankAlisEUR = await getHalkBankAlisEUR(html)
   const pHalkBankSatisEUR = await getHalkBankSatisEUR(html)
@@ -108,7 +108,7 @@ export async function getHalkBankEUR() {
   )
 }
 
-export async function getHalkBankEURUSD() {
+async function getHalkBankEURUSD() {
   const html = await getHTML(getURL)
   const pHalkBankAlisEUR = await getHalkBankAlisEUR(html)
   const pHalkBankSatisEUR = await getHalkBankSatisEUR(html)
@@ -154,7 +154,7 @@ async function getHalkBankSatisGAU(html) {
   return HalkBankSatisGAU
 }
 
-export async function getHalkBankGAU() {
+async function getHalkBankGAU() {
   const html = await getHTML(getURL)
   const pHalkBankAlisGAU = await getHalkBankAlisGAU(html)
   const pHalkBankSatisGAU = await getHalkBankSatisGAU(html)
@@ -177,8 +177,9 @@ export async function getHalkBankGAU() {
   )
 }
 
-export default function getHalkBankForex() {
+function getHalkBankForex() {
   return (
     getHalkBankUSD() + getHalkBankEUR() + getHalkBankGAU() + getHalkBankEURUSD() + db(update_sql)
   )
 }
+module.exports = getHalkBankForex;
