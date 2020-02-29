@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require('mysql');
 const dotenv = require('dotenv');
-const Doviz = require('./data/doviz');
+const Doviz = require('./data/forex');
 
 dotenv.config({ path: __dirname + '/functions/.env' })
 
