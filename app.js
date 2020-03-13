@@ -75,6 +75,29 @@ app.get('/gau', (req, res) => {
   });
 
 })
+
+app.get('/interest', (req, res) => {
+
+  let sql = `SELECT * FROM realtime_interest LEFT JOIN bank_list ON realtime_interest.bank_id = bank_list.bank_id`;
+
+  let query = db.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit', (req, res) => {
+
+  let sql = `SELECT * FROM realtime_profit LEFT JOIN bank_list ON realtime_profit.bank_id = bank_list.bank_id`;
+
+  let query = db.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
 // REAL TIME END
 
 // REAL TIME SINGLE BANK START
@@ -129,6 +152,33 @@ app.get('/gau/:bank_slug', (req, res) => {
   });
 
 })
+
+app.get('/interest/:bank_slug', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM realtime_interest,bank_list WHERE realtime_interest.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit/:bank_slug', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM realtime_profit,bank_list WHERE realtime_profit.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
 // REAL TIME SINGLE BANK END
 
 // ARCHIVE SINGLE BANK START
@@ -183,6 +233,33 @@ app.get('/gau/:bank_slug/archive', (req, res) => {
   });
 
 })
+
+app.get('/interest/:bank_slug/archive', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_interest,bank_list WHERE archive_interest.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit/:bank_slug/archive', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_profit,bank_list WHERE archive_profit.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
 // ARCHIVE SINGLE BANK END
 
 module.exports = app;

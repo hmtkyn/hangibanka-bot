@@ -14,7 +14,7 @@ const db = mysql.createPool({
   password: mysql_password,
   database: mysql_database,
   acquireTimeout: 30000,
-  connectionLimit: 50
+  connectionLimit: 10
 });
 
 module.exports = db;

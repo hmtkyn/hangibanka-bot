@@ -19,37 +19,6 @@ const getYapiKrediBankForex = require('./forex/yapikredibank');
 const getZiraatBankForex = require('./forex/ziraatbank');
 const archiveAll = require('./forex/archive');
 
-/* function Forex() {
-  cron.schedule('* * * * *', () => {
-    return (
-      console.log('==========>') +
-      getAkbankForex() +
-      getAlBarakaTurkBankForex() +
-      getDenizBankForex() +
-      getEnParaForex() +
-      getGarantiBankForex() +
-      getHalkBankForex() +
-      getHSBCBankForex() +
-      getIngBankForex() +
-      getIsBankForex() +
-      getKuveytTurkBankForex() +
-      getQNBFinansBankForex() +
-      getSekerBankForex() +
-      getSeninBankanForex() +
-      getTEBBankForex() +
-      getTurkiyeFinansBankForex() +
-      getVakifBankForex() +
-      getYapiKrediBankForex() +
-      getZiraatBankForex()
-    )
-  }, { scheduled: true, timezone: "Europe/Istanbul" });
-  cron.schedule('30 * * * *', () => {
-    return (console.log('==========>') + archiveAll())
-  }, { scheduled: true, timezone: "Europe/Istanbul" });
-}
-
-module.exports = Forex; */
-
 function Forex() {
   cron.schedule('* * * * *', () => {
     return (
@@ -74,7 +43,7 @@ function Forex() {
       getZiraatBankForex()
     )
   }, { scheduled: true, timezone: "Europe/Istanbul" });
-  cron.schedule('* * * * *', () => {
+  cron.schedule('30 * * * *', () => {
     return (console.log('==========>') + archiveAll())
   }, { scheduled: true, timezone: "Europe/Istanbul" });
 }
