@@ -1,18 +1,19 @@
 const TegAction = require('../../functions/telegram')
 const db = require('../../functions/mysql')
 
-const b_name = "SeninBankan"
-const b_slug = "seninbankan"
-const b_url = "https://www.seninbankan.com.tr"
-const b_logo = "https://hangibank.com/img/bank/seninbankan_logo.jpg"
-const b_type_capital = "Özel"
+const b_name = "Ziraat Katılım"
+const b_slug = "ziraatkatilim"
+const b_url = "https://www.ziraatkatilim.com.tr"
+const b_logo = "https://hangibank.com/img/bank/ziraatkatilim_logo.jpg"
+const b_type_capital = "Kamu"
 const b_type_service = "Katılım"
 
 let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,bank_type_capital,bank_type_service) VALUES ('${b_name}','${b_slug}','${b_url}','${b_logo}','${b_type_capital}','${b_type_service}')`
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-async function getSeninBankan() {
+
+async function getZiraatKatilim() {
 
   try {
 
@@ -27,148 +28,148 @@ async function getSeninBankan() {
     // Create Data
     let dataSet = [
       {
-        updateID: 'seninbankanTRY10000100003131',
+        updateID: 'ziraatkatilimTRY10000100003131',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.39'
       },
       {
-        updateID: 'seninbankanTRY10000100009191',
+        updateID: 'ziraatkatilimTRY10000100009191',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.16'
       },
       {
-        updateID: 'seninbankanTRY1000010000180180',
+        updateID: 'ziraatkatilimTRY1000010000180180',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.18'
       },
       {
-        updateID: 'seninbankanTRY1000010000366366',
+        updateID: 'ziraatkatilimTRY1000010000366366',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '366',
         periodEnd: '366',
-        profitShareRate: '16.1'
+        profitShareRate: '14.51'
       },
       {
-        updateID: 'seninbankanTRY50000500003131',
+        updateID: 'ziraatkatilimTRY50000500003131',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.39'
       },
       {
-        updateID: 'seninbankanTRY50000500009191',
+        updateID: 'ziraatkatilimTRY50000500009191',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.16'
       },
       {
-        updateID: 'seninbankanTRY5000050000180180',
+        updateID: 'ziraatkatilimTRY5000050000180180',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.18'
       },
       {
-        updateID: 'seninbankanTRY5000050000366366',
+        updateID: 'ziraatkatilimTRY5000050000366366',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '366',
         periodEnd: '366',
-        profitShareRate: '16.1'
+        profitShareRate: '14.51'
       },
       {
-        updateID: 'seninbankanTRY1000001000003131',
+        updateID: 'ziraatkatilimTRY1000001000003131',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.39'
       },
       {
-        updateID: 'seninbankanTRY1000001000009191',
+        updateID: 'ziraatkatilimTRY1000001000009191',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.16'
       },
       {
-        updateID: 'seninbankanTRY100000100000180180',
+        updateID: 'ziraatkatilimTRY100000100000180180',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.18'
       },
       {
-        updateID: 'seninbankanTRY100000100000366366',
+        updateID: 'ziraatkatilimTRY100000100000366366',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '366',
         periodEnd: '366',
-        profitShareRate: '16.1'
+        profitShareRate: '14.51'
       },
       {
-        updateID: 'seninbankanTRY2500002500003131',
+        updateID: 'ziraatkatilimTRY2500002500003131',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.39'
       },
       {
-        updateID: 'seninbankanTRY2500002500009191',
+        updateID: 'ziraatkatilimTRY2500002500009191',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.16'
       },
       {
-        updateID: 'seninbankanTRY250000250000180180',
+        updateID: 'ziraatkatilimTRY250000250000180180',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.18'
       },
       {
-        updateID: 'seninbankanTRY250000250000366366',
+        updateID: 'ziraatkatilimTRY250000250000366366',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '366',
         periodEnd: '366',
-        profitShareRate: '16.1'
+        profitShareRate: '14.51'
       }
     ]
     console.log(dataSet)
@@ -191,4 +192,4 @@ async function getSeninBankan() {
 
 }
 
-module.exports = getSeninBankan;
+module.exports = getZiraatKatilim;

@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "ŞekerBank"
 const b_slug = "sekerbank"
 const b_url = "https://www.sekerbank.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/seker_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/seker_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -63,7 +63,9 @@ async function getSekerBankUSD() {
 
   let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime USD added!')
   console.log(
@@ -102,7 +104,9 @@ async function getSekerBankEUR() {
 
   let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime EUR added!')
   console.log(
@@ -132,7 +136,9 @@ async function getSekerBankEURUSD() {
 
   let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime EUR/USD added!')
   console.log(
@@ -141,7 +147,7 @@ async function getSekerBankEURUSD() {
 }
 
 function getSekerBankForex() {
-  return (getSekerBankUSD() + getSekerBankEUR() + getSekerBankEURUSD() + db(update_sql))
+  return (getSekerBankUSD() + getSekerBankEUR() + getSekerBankEURUSD())
 }
 
 module.exports = getSekerBankForex;

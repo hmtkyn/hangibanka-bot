@@ -6,7 +6,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "İş Bank"
 const b_slug = "isbank"
 const b_url = "https://www.isbank.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/is_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/is_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -16,27 +16,16 @@ let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug
 
 let fixUTCMonth = new Date().getUTCMonth()
 
-let fixUTCFullTime =
-  new Date().getUTCFullYear() +
-  '-' +
-  ++fixUTCMonth +
-  '-' +
-  new Date().getUTCDate()
+let fixUTCFullTime = new Date().getUTCFullYear() + '-' + ++fixUTCMonth + '-' + new Date().getUTCDate()
 
 let fixUTCFullTimeConvert = Date.now()
 
-let getURL =
-  'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FxRatesHandler.ashx?Lang=tr&fxRateType=INTERACTIVE&date=' +
-  fixUTCFullTime +
-  '&time=' +
-  fixUTCFullTimeConvert +
-  ''
-let getGauURL = 'https://www.isbank.com.tr/_layouts/ISB_DA/HttpHandlers/FinancialDashboardHandler.ashx?time=' + fixUTCFullTimeConvert + ''
+let getURL = "https://www.isbank.com.tr/_vti_bin/DV.Isbank/PriceAndRate/PriceAndRateService.svc/GetFxRates?Lang=tr&fxRateType=INTERACTIVE&date=" + fixUTCFullTime + "&time=" + fixUTCFullTimeConvert + ""
 
 async function getIsBankUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
+    const resData = response.data.Data
     const resUSDBuy = resData[0]['fxRateBuy']
     const resUSDSell = resData[0]['fxRateSell']
 
@@ -48,11 +37,13 @@ async function getIsBankUSD() {
 
     let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-    db(update_data)
+    db.query(update_data, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Realtime USD added!')
     console.log(
-      `IsBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
+      `IsBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL / Rate: ${bank_usd_rate} TL`,
     )
   } catch (error) {
     console.error(error)
@@ -63,7 +54,7 @@ async function getIsBankUSD() {
 async function getIsBankEUR() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
+    const resData = response.data.Data
     const resEURBuy = resData[1]['fxRateBuy']
     const resEURSell = resData[1]['fxRateSell']
 
@@ -75,11 +66,13 @@ async function getIsBankEUR() {
 
     let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-    db(update_data)
+    db.query(update_data, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Realtime EUR added!')
     console.log(
-      `IsBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
+      `IsBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL / Rate: ${bank_eur_rate} TL`,
     )
   } catch (error) {
     console.error(error)
@@ -90,7 +83,7 @@ async function getIsBankEUR() {
 async function getIsBankEURUSD() {
   try {
     const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
+    const resData = response.data.Data
     const resEURBuy = resData[1]['fxRateBuy']
     const resEURSell = resData[1]['fxRateSell']
     const resUSDBuy = resData[0]['fxRateBuy']
@@ -109,11 +102,13 @@ async function getIsBankEURUSD() {
 
     let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-    db(update_data)
+    db.query(update_data, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Realtime EUR/USD added!')
     console.log(
-      `IsBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
+      `IsBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $ / Rate: ${bank_eurusd_rate} $`,
     )
   } catch (error) {
     console.error(error)
@@ -123,10 +118,10 @@ async function getIsBankEURUSD() {
 
 async function getIsBankGAU() {
   try {
-    const response = await axios({ method: 'get', url: getGauURL, timeout: 5000 })
-    const resData = response.data
-    const resGAUBuy = resData['Market'][2]['FxRateBuy']
-    const resGAUSell = resData['Market'][2]['FxRateSell']
+    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
+    const resData = response.data.Data
+    const resGAUBuy = resData[3]['fxRateBuy']
+    const resGAUSell = resData[3]['fxRateSell']
 
     let bank_gau_buy = fixNumber(resGAUBuy)
     let bank_gau_sell = fixNumber(resGAUSell)
@@ -136,11 +131,13 @@ async function getIsBankGAU() {
 
     let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-    db(update_data)
+    db.query(update_data, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Realtime GAU added!')
     console.log(
-      `IsBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
+      `IsBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL / Rate: ${bank_gau_rate} TL`,
     )
   } catch (error) {
     console.error(error)
@@ -149,6 +146,11 @@ async function getIsBankGAU() {
 }
 
 function getIsBankForex() {
-  return (getIsBankUSD() + getIsBankEUR() + getIsBankEURUSD() + getIsBankGAU() + db(update_sql))
+  return (
+    getIsBankUSD() +
+    getIsBankEUR() +
+    getIsBankEURUSD() +
+    getIsBankGAU()
+  )
 }
 module.exports = getIsBankForex;

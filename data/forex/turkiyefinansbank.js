@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "Türkiye Finans"
 const b_slug = "turkiyefinans"
 const b_url = "https://www.turkiyefinans.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/tfkb_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/tfkb_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Katılım"
 
@@ -64,7 +64,9 @@ async function getTurkiyeFinansBankUSD() {
 
   let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime USD added!')
   console.log(
@@ -104,7 +106,9 @@ async function getTurkiyeFinansBankEUR() {
 
   let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime EUR added!')
   console.log(
@@ -142,7 +146,9 @@ async function getTurkiyeFinansBankEURUSD() {
 
   let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime EUR/USD added!')
   console.log(
@@ -182,7 +188,9 @@ async function getTurkiyeFinansBankGAU() {
 
   let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
 
-  db(update_data)
+  db.query(update_data, function (error) {
+    if (error) throw error;
+  })
 
   console.log('Realtime GAU added!')
   console.log(
@@ -195,8 +203,7 @@ function getTurkiyeFinansBankForex() {
     getTurkiyeFinansBankUSD() +
     getTurkiyeFinansBankEUR() +
     getTurkiyeFinansBankGAU() +
-    getTurkiyeFinansBankEURUSD() +
-    db(update_sql)
+    getTurkiyeFinansBankEURUSD()
   )
 }
 

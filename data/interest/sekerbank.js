@@ -1,13 +1,12 @@
-import axios from 'axios'
-import cheerio from 'cheerio'
-import TegAction from '../../functions/telegram'
-import db from '../../functions/mysql'
-import fixNumber from '../../functions/numberfix'
+const axios = require('axios')
+const cheerio = require('cheerio')
+const TegAction = require('../../functions/telegram')
+const db = require('../../functions/mysql')
 
 const b_name = "ŞekerBank"
 const b_slug = "sekerbank"
 const b_url = "https://www.sekerbank.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/seker_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/seker_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -15,131 +14,70 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-const getURL =
-  'https://sube.sekerbank.com.tr/web/servlet/SekerbankServlet?service=SBkurlarOranlar.ButundovizKurlariListele&DISKURUM=ODC'
+const getURL = 'https://sube.sekerbank.com.tr/web/servlet/SekerbankServlet?service=SBkurlarOranlar.MevduatFaizListeleInt&DISKURUM=ODC&paraBirimi=TL'
 
-async function getHTML(url) {
+async function getSekerBank() {
   try {
-    const { data: html } = await axios({
-      method: 'get',
+
+    const response = await axios({
       url: getURL,
-      timeout: 5000,
+      method: 'get',
+      timeout: 10000
     })
-    return html
+    const $ = cheerio.load(response.data);
+
+    console.log($('#div_parabirimi_TL > table > tbody > tr:nth-child(1) > th:nth-child(2)').html())
+
+
+    // Create Price Set Manuel
+    const priceSet = []
+    for (let i = 2; i <= 6; i++) {
+      priceSet.push($('#div_parabirimi_TL > table > tbody > tr:nth-child(1) > th:nth-child(' + i + ')').text().replace(/,/g, '.'))
+    }
+    console.log(priceSet)
+
+    // Create Period Set Manuel
+    const periodSet = [];
+    for (let i = 2; i <= 12; i++) {
+      periodSet.push($('#div_parabirimi_TL > table > tbody > tr:nth-child(' + i + ') > td:nth-child(1)').html().replace(/[ G&#xFFFD;n]/g, ''))
+    }
+    for (let i = 13; i <= 13; i++) {
+      periodSet.push('365-999')
+    }
+    console.log(periodSet)
+
+    // Create Data
+    let dataSet = []
+    for (let price = 0; price < priceSet.length; price++) {
+      for (let period = 0; period < periodSet.length; period++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[price].split('-')[0].slice(0, -3).replace(/[ .]/g, '')}${priceSet[price].split('-')[1].slice(0, -3).replace(/[ .]/g, '')}${periodSet[period].split('-')[0]}${periodSet[period].split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[price].split('-')[0].slice(0, -4),
+          priceEnd: priceSet[price].split('-')[1].slice(0, -3),
+          periodStart: periodSet[period].split('-')[0],
+          periodEnd: periodSet[period].split('-')[1],
+          interestRate: $('#div_parabirimi_TL > table > tbody > tr:nth-child(' + (period + 2) + ') > td:nth-child(' + (price + 2) + ')').text()
+        })
+      }
+    }
+    console.log(dataSet)
+    console.log(dataSet.length)
+
+    for (let data of dataSet) {
+
+      let create_data = `INSERT INTO realtime_interest (bank_id,update_id,interest_currency_type,interest_price_start,interest_price_end,interest_period_start,interest_period_end,interest_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${data.updateID}','${data.cType}','${data.priceStart}','${data.priceEnd}','${data.periodStart}','${data.periodEnd}','${data.interestRate}') ON DUPLICATE KEY UPDATE update_id='${data.updateID}'`
+
+      db.query(create_data, function (error) {
+        if (error) throw error;
+      })
+
+    }
+
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: ŞekerBank')
+    TegAction('Hey Profesör! Problem: ' + b_name + ' -> Faiz Oranları')
   }
 }
 
-async function getSekerBankAlisUSD(html) {
-  const $ = cheerio.load(html)
-  const SekerBankAlisUSD = $(
-    'body > div > div > table > tbody > tr:nth-child(2) > td:nth-child(2)',
-  ).html()
-  return SekerBankAlisUSD
-}
-
-async function getSekerBankSatisUSD(html) {
-  const $ = cheerio.load(html)
-  const SekerBankSatisUSD = $(
-    'body > div > div > table > tbody > tr:nth-child(2) > td:nth-child(3)',
-  ).html()
-  return SekerBankSatisUSD
-}
-
-export async function getSekerBankUSD() {
-  const html = await getHTML(getURL)
-  const pSekerBankAlisUSD = await getSekerBankAlisUSD(html)
-  const pSekerBankSatisUSD = await getSekerBankSatisUSD(html)
-
-  let bank_usd_buy = fixNumber(pSekerBankAlisUSD)
-  let bank_usd_sell = fixNumber(pSekerBankSatisUSD)
-  let bank_usd_rate = fixNumber(
-    fixNumber(pSekerBankSatisUSD) - fixNumber(pSekerBankAlisUSD)
-  )
-
-  let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
-
-  let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-  db(update_data)
-
-  console.log('Realtime USD added!')
-  console.log(
-    `SekerBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
-  )
-}
-
-async function getSekerBankAlisEUR(html) {
-  const $ = cheerio.load(html)
-  const SekerBankAlisEUR = $(
-    'body > div > div > table > tbody > tr:nth-child(3) > td:nth-child(2)',
-  ).html()
-  return SekerBankAlisEUR
-}
-
-async function getSekerBankSatisEUR(html) {
-  const $ = cheerio.load(html)
-  const SekerBankSatisEUR = $(
-    'body > div > div > table > tbody > tr:nth-child(3) > td:nth-child(3)',
-  ).html()
-  return SekerBankSatisEUR
-}
-
-export async function getSekerBankEUR() {
-  const html = await getHTML(getURL)
-  const pSekerBankAlisEUR = await getSekerBankAlisEUR(html)
-  const pSekerBankSatisEUR = await getSekerBankSatisEUR(html)
-
-  let bank_eur_buy = fixNumber(pSekerBankAlisEUR)
-  let bank_eur_sell = fixNumber(pSekerBankSatisEUR)
-  let bank_eur_rate = fixNumber(
-    fixNumber(pSekerBankSatisEUR) - fixNumber(pSekerBankAlisEUR)
-  )
-
-  let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
-
-  let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-  db(update_data)
-
-  console.log('Realtime EUR added!')
-  console.log(
-    `SekerBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
-  )
-}
-
-export async function getSekerBankEURUSD() {
-  const html = await getHTML(getURL)
-  const pSekerBankAlisEUR = await getSekerBankAlisEUR(html)
-  const pSekerBankSatisEUR = await getSekerBankSatisEUR(html)
-  const pSekerBankAlisUSD = await getSekerBankAlisUSD(html)
-  const pSekerBankSatisUSD = await getSekerBankSatisUSD(html)
-
-  let bank_eurusd_buy = fixNumber(
-    fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD)
-  )
-  let bank_eurusd_sell = fixNumber(
-    fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD)
-  )
-  let bank_eurusd_rate = fixNumber(
-    fixNumber(fixNumber(pSekerBankSatisEUR) / fixNumber(pSekerBankSatisUSD)) -
-    fixNumber(fixNumber(pSekerBankAlisEUR) / fixNumber(pSekerBankAlisUSD))
-  )
-
-  let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
-
-  let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-  db(update_data)
-
-  console.log('Realtime EUR/USD added!')
-  console.log(
-    `SekerBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
-  )
-}
-
-export default function getSekerBankForex() {
-  return (getSekerBankUSD() + getSekerBankEUR() + getSekerBankEURUSD() + db(update_sql))
-}
+module.exports = getSekerBank;

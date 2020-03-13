@@ -1,12 +1,12 @@
-import axios from 'axios'
-import TegAction from '../../functions/telegram'
-import db from '../../functions/mysql'
-import fixNumber from '../../functions/numberfix'
+const axios = require('axios')
+const cheerio = require('cheerio')
+const TegAction = require('../../functions/telegram')
+const db = require('../../functions/mysql')
 
 const b_name = "QNB Finansbank"
 const b_slug = "qnbfinansbank"
 const b_url = "https://www.qnbfinansbank.com"
-const b_logo = "https://hangibank.com/assets/img/bank/qnb_finans_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/qnb_finans_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -14,141 +14,64 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-let fixUTCMonth = new Date().getUTCMonth()
+const getURL = 'https://www.qnbfinansbank.com/e-vadeli-mevduat-urunleri'
 
-let fixUTCFullTime =
-  new Date().getUTCFullYear() +
-  '-' +
-  ++fixUTCMonth +
-  '-' +
-  new Date().getUTCDate()
-
-const getURL =
-  'https://www.qnbfinansbank.com/api/LoanCalculators/ExchangeParite?exChangeDate=' +
-  fixUTCFullTime +
-  '&channelCode=148'
-
-export async function getQNBFinansBankUSD() {
+async function getQNBFinansBank() {
   try {
-    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resUSDBuy = resData[0]['effectiveBuyingExchangeRateField']
-    const resUSDSell = resData[0]['effectiveSellingExchangeRateField']
 
-    let bank_usd_buy = fixNumber(resUSDBuy)
-    let bank_usd_sell = fixNumber(resUSDSell)
-    let bank_usd_rate = fixNumber(fixNumber(resUSDSell) - fixNumber(resUSDBuy))
+    const response = await axios({
+      url: getURL,
+      method: 'get',
+      timeout: 5000
+    })
+    const $ = cheerio.load(response.data);
 
-    let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+    // Create Price Set Manuel
+    const priceSet = []
+    for (let i = 2; i <= 8; i++) {
+      priceSet.push($('#ContentSection > section > div.container > div.page-subpage-container > div > div.col-md-9 > div > div:nth-child(3) > div > table:nth-child(2) > tbody > tr:nth-child(' + i + ') > td:nth-child(1) > strong').text().replace(/,/g, '.'))
+    }
+    console.log(priceSet)
 
-    let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+    // Create Period Set Manuel
+    const periodSet = [];
+    for (let i = 2; i <= 7; i++) {
+      periodSet.push($('#ContentSection > section > div.container > div.page-subpage-container > div > div.col-md-9 > div > div:nth-child(3) > div > table:nth-child(2) > tbody > tr:nth-child(1) > td:nth-child(' + i + ') > strong').text().replace(/[ gün]/g, ''))
+    }
+    console.log(periodSet)
 
-    db(update_data)
+    // Create Data
+    let dataSet = []
+    for (let price = 0; price < priceSet.length; price++) {
+      for (let period = 0; period < periodSet.length; period++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[price].split('-')[0].replace(/[ .]/g, '')}${priceSet[price].split('-')[1].replace(/[ .]/g, '')}${periodSet[period].split('-')[0]}${periodSet[period].split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[price].split('-')[0],
+          priceEnd: priceSet[price].split('-')[1],
+          periodStart: periodSet[period].split('-')[0],
+          periodEnd: periodSet[period].split('-')[1],
+          interestRate: $('#ContentSection > section > div.container > div.page-subpage-container > div > div.col-md-9 > div > div:nth-child(3) > div > table:nth-child(2) > tbody > tr:nth-child(' + (price + 2) + ') > td:nth-child(' + (period + 2) + ')').text().replace(/,/g, '.').replace(/%/g, '')
+        })
+      }
+    }
+    console.log(dataSet)
+    console.log(dataSet.length)
 
-    console.log('Realtime USD added!')
-    console.log(
-      `QNBFinansBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
-    )
+    for (let data of dataSet) {
+
+      let create_data = `INSERT INTO realtime_interest (bank_id,update_id,interest_currency_type,interest_price_start,interest_price_end,interest_period_start,interest_period_end,interest_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${data.updateID}','${data.cType}','${data.priceStart}','${data.priceEnd}','${data.periodStart}','${data.periodEnd}','${data.interestRate}') ON DUPLICATE KEY UPDATE update_id='${data.updateID}'`
+
+      db.query(create_data, function (error) {
+        if (error) throw error;
+      })
+
+    }
+
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: QNB FinansBank -> Dolar')
+    TegAction('Hey Profesör! Problem: ' + b_name + ' -> Faiz Oranları')
   }
 }
 
-export async function getQNBFinansBankEUR() {
-  try {
-    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resEURBuy = resData[1]['effectiveBuyingExchangeRateField']
-    const resEURSell = resData[1]['effectiveSellingExchangeRateField']
-
-    let bank_eur_buy = fixNumber(resEURBuy)
-    let bank_eur_sell = fixNumber(resEURSell)
-    let bank_eur_rate = fixNumber(fixNumber(resEURSell) - fixNumber(resEURBuy))
-
-    let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
-
-    let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime EUR added!')
-    console.log(
-      `QNBFinansBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: QNB FinansBank -> Euro')
-  }
-}
-
-export async function getQNBFinansBankEURUSD() {
-  try {
-    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resEURBuy = resData[1]['effectiveBuyingExchangeRateField']
-    const resEURSell = resData[1]['effectiveSellingExchangeRateField']
-    const resUSDBuy = resData[0]['effectiveBuyingExchangeRateField']
-    const resUSDSell = resData[0]['effectiveSellingExchangeRateField']
-
-    let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
-    let bank_eurusd_sell = fixNumber(
-      fixNumber(resEURSell) / fixNumber(resUSDSell)
-    )
-    let bank_eurusd_rate = fixNumber(
-      fixNumber(fixNumber(resEURSell) / fixNumber(resUSDSell)) -
-      fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
-    )
-
-    let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
-
-    let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime EUR/USD added!')
-    console.log(
-      `QNBFinansBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: QNB FinansBank -> Euro/Dolar')
-  }
-}
-
-export async function getQNBFinansBankGAU() {
-  try {
-    const response = await axios({ method: 'get', url: getURL, timeout: 5000 })
-    const resData = response.data
-    const resGAUBuy = resData[16]['effectiveBuyingExchangeRateField']
-    const resGAUSell = resData[16]['effectiveSellingExchangeRateField']
-
-    let bank_gau_buy = fixNumber(resGAUBuy)
-    let bank_gau_sell = fixNumber(resGAUSell)
-    let bank_gau_rate = fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy))
-
-    let create_data = `INSERT INTO realtime_gau (bank_id,gau_buy,gau_sell,gau_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_gau_buy}','${bank_gau_sell}','${bank_gau_rate}')`
-
-    let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime GAU added!')
-    console.log(
-      `QNBFinansBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: QNB FinansBank -> Altın')
-  }
-}
-
-export default function getQNBFinansBankForex() {
-  return (
-    getQNBFinansBankUSD() +
-    getQNBFinansBankEUR() +
-    getQNBFinansBankGAU() +
-    getQNBFinansBankEURUSD() +
-    db(update_sql)
-  )
-}
+module.exports = getQNBFinansBank;

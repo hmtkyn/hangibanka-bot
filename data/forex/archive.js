@@ -6,7 +6,9 @@ async function archiveUSD() {
 
     let create_sql = `INSERT INTO archive_usd (bank_id,usd_buy,usd_sell,usd_rate) SELECT bank_id,usd_buy,usd_sell,usd_rate FROM realtime_usd ORDER BY bank_id ASC`
 
-    db(create_sql)
+    db.query(create_sql, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Archive USD added!')
   } catch (error) {
@@ -20,7 +22,9 @@ async function archiveEUR() {
 
     let create_sql = `INSERT INTO archive_eur (bank_id,eur_buy,eur_sell,eur_rate) SELECT bank_id,eur_buy,eur_sell,eur_rate FROM realtime_eur ORDER BY bank_id ASC`
 
-    db(create_sql)
+    db.query(create_sql, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Archive EUR added!')
   } catch (error) {
@@ -34,7 +38,9 @@ async function archiveEURUSD() {
 
     let create_sql = `INSERT INTO archive_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) SELECT bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate FROM realtime_eur_usd ORDER BY bank_id ASC`
 
-    db(create_sql)
+    db.query(create_sql, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Archive EUR-USD added!')
   } catch (error) {
@@ -48,7 +54,9 @@ async function archiveGAU() {
 
     let create_sql = `INSERT INTO archive_gau (bank_id,gau_buy,gau_sell,gau_rate) SELECT bank_id,gau_buy,gau_sell,gau_rate FROM realtime_gau ORDER BY bank_id ASC`
 
-    db(create_sql)
+    db.query(create_sql, function (error) {
+      if (error) throw error;
+    })
 
     console.log('Archive GAU added!')
   } catch (error) {

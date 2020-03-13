@@ -1,12 +1,12 @@
-import axios from 'axios'
-import TegAction from '../../functions/telegram'
-import db from '../../functions/mysql'
-import fixNumber from '../../functions/numberfix'
+const axios = require('axios')
+const cheerio = require('cheerio')
+const TegAction = require('../../functions/telegram')
+const db = require('../../functions/mysql')
 
 const b_name = "Yapı Kredi"
 const b_slug = "yapikredi"
 const b_url = "https://www.yapikredi.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/yapi_kredi_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/yapi_kredi_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -14,231 +14,77 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-const getURL =
-  'https://www.yapikredi.com.tr/_ajaxproxy/general.aspx/LoadMainCurrencies'
+const getURLRate = 'https://www.yapikredi.com.tr/bireysel-bankacilik/hesaplama-araclari/e-mevduat-faizi-hesaplama.aspx/LoadDepositRatesData';
 
-export async function getYapiKrediBankUSD() {
+const getURLPrice = 'https://www.yapikredi.com.tr/bireysel-bankacilik/mevduat-urunleri/e-mevduat.aspx/LoadDepositLimitData'
+
+async function getYapiKrediBank() {
+
   try {
-    const fixRes = await axios({
-      url: getURL,
+
+    const responseRate = await axios({
+      url: getURLRate,
       method: 'post',
-      timeout: 5000,
-      headers: {
-        'cache-control': 'no-cache',
-        Referer:
-          'https://www.yapikredi.com.tr/yatirimci-kosesi/doviz-bilgileri',
-        Connection: 'keep-alive',
-        Cookie:
-          '_ga=GA1.3.1277262414.1555785945; _gid=GA1.3.1441522397.1555785945; NSC_xxx.zbqjlsfej.dpn.us_ttm=14b5a3d999658a3d0eafc68099d3f6ebf657efefcc4f80142e0ff9a3655b058681cc0896; ASP.NET_SessionId=xluoaw2edfshbzmlazisk2n5; BehaviorPad_Profile=e8070350-70d8-43b2-8b2a-1c2e0dbb42d9; NSC_xxx.zbqjlsfej.dpn.us_xbg=5508a3d325e0f274457fe5eb7a63a957513b5ce79c6d7be139be7df345e0524263933b75; _gat=1; _fbp=fb.2.1555865718180.136676039; TDESessionID=13873575528454096; _sgf_user_id=72034382979497549; _sgf_session_id=956950636875063296; bp_visit_636914733168263209=p=~/yatirimci-kosesi/doviz-bilgileri&u=636914733423579493&h=2; TS01034ed8=014f1ea3699ff031fe0f3b6baf6481cb6c5fb7781113ceb6d828b8e743e1f55244f655bcc00a8ad73d37d101d3cd5d365acb6f3d647786b5abca37c88767b02f7891c1aa06f83734828d2753e1d551ce57baaf1ced275d0b65f6048fcac9da4079171fa903737cb2f4b6bab1370cf676e82ee5cb0b',
-        'X-Requested-With': 'JQuery PageEvents',
-        'Cache-Control': 'no-cache',
-        Accept: 'text/plain, */*; q=0.01',
-        'Content-Type': 'application/json; charset=UTF-8',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Origin: 'https://www.yapikredi.com.tr',
-        Pragma: 'no-cache',
-      },
+      timeout: 10000,
+      data: {}
     })
+    const $1 = cheerio.load(responseRate.data.d.Data, { normalizeWhitespace: true, xmlMode: true, xml: true });
 
-    const resData = fixRes.data.d
-    const resUSDBuy = resData[1]['buy']
-    const resUSDSell = resData[1]['sell']
+    // Create Period Set Manuel
+    const periodSet = [];
+    for (let i = 1; i <= 5; i++) {
+      periodSet.push(`${$1('DepositRateData > RateTypes > RateItem[ID="ytl"] > Ranges > RangeItem:nth-child(' + i + ')').attr('MinDay')}-${$1('DepositRateData > RateTypes > RateItem[ID="ytl"] > Ranges > RangeItem:nth-child(' + i + ')').attr('MaxDay')}`)
+    }
+    console.log(periodSet)
 
-    let bank_usd_buy = fixNumber(resUSDBuy)
-    let bank_usd_sell = fixNumber(resUSDSell)
-    let bank_usd_rate = fixNumber(fixNumber(resUSDSell) - fixNumber(resUSDBuy))
+    const responsePrice = await axios({
+      url: getURLPrice,
+      method: 'post',
+      timeout: 10000,
+      data: {}
+    })
+    const $2 = cheerio.load(responsePrice.data.d.Data, { normalizeWhitespace: true, xmlMode: true, xml: true });
 
-    let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+    // Create Price Set Manuel
+    const priceSet = []
+    for (let i = 1; i <= 7; i++) {
+      priceSet.push(`${$2('DepositLimitData > RateTypes > RateItem[ID="ytl"] > Ranges > RangeItem:nth-child(' + i + ')').attr('MinAmount').replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.").slice(0, -3)}-${$2('DepositLimitData > RateTypes > RateItem[ID="ytl"] > Ranges > RangeItem:nth-child(' + i + ')').attr('MaxAmount').replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.").slice(0, -3)}`)
+    }
+    console.log(priceSet)
 
-    let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+    // Create Data
+    let dataSet = []
+    for (let price = 0; price < priceSet.length; price++) {
+      for (let period = 0; period < periodSet.length; period++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[price].split('-')[0].replace(/[ .]/g, '')}${priceSet[price].split('-')[1].replace(/[ .]/g, '')}${periodSet[period].split('-')[0]}${periodSet[period].split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[price].split('-')[0],
+          priceEnd: priceSet[price].split('-')[1],
+          periodStart: periodSet[period].split('-')[0],
+          periodEnd: periodSet[period].split('-')[1],
+          interestRate: $1('DepositRateData > RateTypes > RateItem[ID="ytl"] > Ranges > RangeItem:nth-child(' + (period + 1) + ')').attr('Ratio' + (price + 1) + '').replace(/,/g, '.')
+        })
+      }
+    }
+    console.log(dataSet)
+    console.log(dataSet.length)
 
-    db(update_data)
+    for (let data of dataSet) {
 
-    console.log('Realtime USD added!')
-    console.log(
-      `YapiKrediBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
-    )
+      let create_data = `INSERT INTO realtime_interest(bank_id, update_id, interest_currency_type, interest_price_start, interest_price_end, interest_period_start, interest_period_end, interest_rate) VALUES((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'), '${data.updateID}', '${data.cType}', '${data.priceStart}', '${data.priceEnd}', '${data.periodStart}', '${data.periodEnd}', '${data.interestRate}') ON DUPLICATE KEY UPDATE update_id = '${data.updateID}'`
+
+      db.query(create_data, function (error) {
+        if (error) throw error;
+      })
+
+    }
+
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: Yapı Kredi Bankası -> Dolar')
+    TegAction('Hey Profesör! Problem: ' + b_name + ' -> Faiz Oranları')
   }
+
 }
 
-export async function getYapiKrediBankEUR() {
-  try {
-    const fixRes = await axios({
-      url: getURL,
-      method: 'post',
-      timeout: 5000,
-      headers: {
-        'cache-control': 'no-cache',
-        Referer:
-          'https://www.yapikredi.com.tr/yatirimci-kosesi/doviz-bilgileri',
-        Connection: 'keep-alive',
-        Cookie:
-          '_ga=GA1.3.1277262414.1555785945; _gid=GA1.3.1441522397.1555785945; NSC_xxx.zbqjlsfej.dpn.us_ttm=14b5a3d999658a3d0eafc68099d3f6ebf657efefcc4f80142e0ff9a3655b058681cc0896; ASP.NET_SessionId=xluoaw2edfshbzmlazisk2n5; BehaviorPad_Profile=e8070350-70d8-43b2-8b2a-1c2e0dbb42d9; NSC_xxx.zbqjlsfej.dpn.us_xbg=5508a3d325e0f274457fe5eb7a63a957513b5ce79c6d7be139be7df345e0524263933b75; _gat=1; _fbp=fb.2.1555865718180.136676039; TDESessionID=13873575528454096; _sgf_user_id=72034382979497549; _sgf_session_id=956950636875063296; bp_visit_636914733168263209=p=~/yatirimci-kosesi/doviz-bilgileri&u=636914733423579493&h=2; TS01034ed8=014f1ea3699ff031fe0f3b6baf6481cb6c5fb7781113ceb6d828b8e743e1f55244f655bcc00a8ad73d37d101d3cd5d365acb6f3d647786b5abca37c88767b02f7891c1aa06f83734828d2753e1d551ce57baaf1ced275d0b65f6048fcac9da4079171fa903737cb2f4b6bab1370cf676e82ee5cb0b',
-        'X-Requested-With': 'JQuery PageEvents',
-        'Cache-Control': 'no-cache',
-        Accept: 'text/plain, */*; q=0.01',
-        'Content-Type': 'application/json; charset=UTF-8',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Origin: 'https://www.yapikredi.com.tr',
-        Pragma: 'no-cache',
-      },
-    })
-
-    const resData = fixRes.data.d
-    const resEURBuy = resData[0]['buy']
-    const resEURSell = resData[0]['sell']
-
-    let bank_eur_buy = fixNumber(resEURBuy)
-    let bank_eur_sell = fixNumber(resEURSell)
-    let bank_eur_rate = fixNumber(fixNumber(resEURSell) - fixNumber(resEURBuy))
-
-    let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
-
-    let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime EUR added!')
-    console.log(
-      `YapiKrediBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: Yapı Kredi Bankası -> Euro')
-  }
-}
-
-export async function getYapiKrediBankEURUSD() {
-  try {
-    const fixRes = await axios({
-      url: getURL,
-      method: 'post',
-      timeout: 5000,
-      headers: {
-        'cache-control': 'no-cache',
-        Referer:
-          'https://www.yapikredi.com.tr/yatirimci-kosesi/doviz-bilgileri',
-        Connection: 'keep-alive',
-        Cookie:
-          '_ga=GA1.3.1277262414.1555785945; _gid=GA1.3.1441522397.1555785945; NSC_xxx.zbqjlsfej.dpn.us_ttm=14b5a3d999658a3d0eafc68099d3f6ebf657efefcc4f80142e0ff9a3655b058681cc0896; ASP.NET_SessionId=xluoaw2edfshbzmlazisk2n5; BehaviorPad_Profile=e8070350-70d8-43b2-8b2a-1c2e0dbb42d9; NSC_xxx.zbqjlsfej.dpn.us_xbg=5508a3d325e0f274457fe5eb7a63a957513b5ce79c6d7be139be7df345e0524263933b75; _gat=1; _fbp=fb.2.1555865718180.136676039; TDESessionID=13873575528454096; _sgf_user_id=72034382979497549; _sgf_session_id=956950636875063296; bp_visit_636914733168263209=p=~/yatirimci-kosesi/doviz-bilgileri&u=636914733423579493&h=2; TS01034ed8=014f1ea3699ff031fe0f3b6baf6481cb6c5fb7781113ceb6d828b8e743e1f55244f655bcc00a8ad73d37d101d3cd5d365acb6f3d647786b5abca37c88767b02f7891c1aa06f83734828d2753e1d551ce57baaf1ced275d0b65f6048fcac9da4079171fa903737cb2f4b6bab1370cf676e82ee5cb0b',
-        'X-Requested-With': 'JQuery PageEvents',
-        'Cache-Control': 'no-cache',
-        Accept: 'text/plain, */*; q=0.01',
-        'Content-Type': 'application/json; charset=UTF-8',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Origin: 'https://www.yapikredi.com.tr',
-        Pragma: 'no-cache',
-      },
-    })
-
-    const resData = fixRes.data.d
-    const resEURBuy = resData[0]['buy']
-    const resEURSell = resData[0]['sell']
-    const resUSDBuy = resData[1]['buy']
-    const resUSDSell = resData[1]['sell']
-
-    let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
-    let bank_eurusd_sell = fixNumber(
-      fixNumber(resEURSell) / fixNumber(resUSDSell)
-    )
-    let bank_eurusd_rate = fixNumber(
-      fixNumber(fixNumber(resEURSell) / fixNumber(resUSDSell)) -
-      fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
-    )
-
-    let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
-
-    let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime EUR/USD added!')
-    console.log(
-      `YapiKrediBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: Yapı Kredi Bankası -> Euro/Dolar',
-    )
-  }
-}
-
-export async function getYapiKrediBankGAU() {
-  try {
-    const fixRes = await axios({
-      url: getURL,
-      method: 'post',
-      timeout: 5000,
-      headers: {
-        'cache-control': 'no-cache',
-        Referer:
-          'https://www.yapikredi.com.tr/yatirimci-kosesi/doviz-bilgileri',
-        Connection: 'keep-alive',
-        Cookie:
-          '_ga=GA1.3.1277262414.1555785945; _gid=GA1.3.1441522397.1555785945; NSC_xxx.zbqjlsfej.dpn.us_ttm=14b5a3d999658a3d0eafc68099d3f6ebf657efefcc4f80142e0ff9a3655b058681cc0896; ASP.NET_SessionId=xluoaw2edfshbzmlazisk2n5; BehaviorPad_Profile=e8070350-70d8-43b2-8b2a-1c2e0dbb42d9; NSC_xxx.zbqjlsfej.dpn.us_xbg=5508a3d325e0f274457fe5eb7a63a957513b5ce79c6d7be139be7df345e0524263933b75; _gat=1; _fbp=fb.2.1555865718180.136676039; TDESessionID=13873575528454096; _sgf_user_id=72034382979497549; _sgf_session_id=956950636875063296; bp_visit_636914733168263209=p=~/yatirimci-kosesi/doviz-bilgileri&u=636914733423579493&h=2; TS01034ed8=014f1ea3699ff031fe0f3b6baf6481cb6c5fb7781113ceb6d828b8e743e1f55244f655bcc00a8ad73d37d101d3cd5d365acb6f3d647786b5abca37c88767b02f7891c1aa06f83734828d2753e1d551ce57baaf1ced275d0b65f6048fcac9da4079171fa903737cb2f4b6bab1370cf676e82ee5cb0b',
-        'X-Requested-With': 'JQuery PageEvents',
-        'Cache-Control': 'no-cache',
-        Accept: 'text/plain, */*; q=0.01',
-        'Content-Type': 'application/json; charset=UTF-8',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Origin: 'https://www.yapikredi.com.tr',
-        Pragma: 'no-cache',
-      },
-    })
-
-    const resData = fixRes.data.d
-    const resGAUBuy = resData[2]['buy']
-    const resGAUSell = resData[2]['sell']
-
-    let bank_gau_buy = fixNumber(resGAUBuy)
-    let bank_gau_sell = fixNumber(resGAUSell)
-    let bank_gau_rate = fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy))
-
-    let create_data = `INSERT INTO realtime_gau (bank_id,gau_buy,gau_sell,gau_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_gau_buy}','${bank_gau_sell}','${bank_gau_rate}')`
-
-    let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime GAU added!')
-    console.log(
-      `YapiKrediBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: Yapı Kredi Bankası -> Altın')
-  }
-}
-
-export default function getYapiKrediBankForex() {
-  return (
-    getYapiKrediBankUSD() +
-    getYapiKrediBankEUR() +
-    getYapiKrediBankGAU() +
-    getYapiKrediBankEURUSD() +
-    db(update_sql)
-  )
-}
+module.exports = getYapiKrediBank;

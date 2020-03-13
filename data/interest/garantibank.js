@@ -1,12 +1,12 @@
-import axios from 'axios'
-import TegAction from '../../functions/telegram'
-import db from '../../functions/mysql'
-import fixNumber from '../../functions/numberfix'
+const axios = require('axios')
+const cheerio = require('cheerio')
+const TegAction = require('../../functions/telegram')
+const db = require('../../functions/mysql')
 
 const b_name = "Garanti BBVA"
 const b_slug = "garantibbva"
 const b_url = "https://www.garantibbva.com.tr"
-const b_logo = "https://hangibank.com/assets/img/bank/garanti_logo.jpg"
+const b_logo = "https://hangibank.com/img/bank/garanti_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 
@@ -15,220 +15,126 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
 const getURL =
-  'https://www.garanti.com.tr/proxy/novaform/currency-list-and-detail'
+  'https://www.garantibbva.com.tr/proxy/novaform/ratesandfees/e-time-deposit-rates-tr'
 
-const fixDate = Date.now()
-
-export async function getGarantiBankUSD() {
+async function getGarantiBank() {
   try {
-    const fixRes = await axios({
+    const response = await axios({
       url: getURL,
-      method: 'get',
+      method: 'post',
       timeout: 5000,
-      params: {
-        _: fixDate,
-      },
       headers: {
-        'cache-control': 'no-cache',
-        Referer: 'https://www.garanti.com.tr/doviz-kurlari',
-        Connection: 'keep-alive',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Cache-Control': 'no-cache',
-        Accept: '*/*',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Pragma: 'no-cache',
-      },
+        "Content-Type": "text/plain;charset=UTF-8",
+        "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7,de;q=0.6,fr;q=0.5,zh-CN;q=0.4,zh;q=0.3,it;q=0.2",
+        "Origin": "https://www.garantibbva.com.tr",
+        "Accept": "application/json, text/javascript, */*",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Referer": "https://www.garantibbva.com.tr/tr/bireysel/mevduat_ve_yatirim/mevduat_urunleri/e_vadeli_hesap.page"
+      }
     })
 
-    const resData = JSON.parse(fixRes.data)
-    const resUSDBuy = resData[0]['Exchange'][0]['buyRate']
-    const resUSDSell = resData[0]['Exchange'][0]['sellRate']
+    const $ = cheerio.load(response.data.content);
 
-    let bank_usd_buy = fixNumber(resUSDBuy)
-    let bank_usd_sell = fixNumber(resUSDSell)
-    let bank_usd_rate = fixNumber(fixNumber(resUSDSell) - fixNumber(resUSDBuy))
+    // Create Price Set Manuel
+    const priceSet = []
+    for (let i = 2; i <= 8; i++) {
+      priceSet.push($('table.contentGrid>thead>tr:nth-child(1)>th:nth-child(' + i + ')>span>span>span').html().trim())
+    }
+    for (let i = 8; i <= 8; i++) {
+      priceSet.push('1.000.000 - 999.999.999.999')
+    }
 
-    let create_data = `INSERT INTO realtime_usd (bank_id,usd_buy,usd_sell,usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_usd_buy}','${bank_usd_sell}','${bank_usd_rate}')`
+    // Create Period Set Manuel
+    const periodSet = [];
+    for (let i = 1; i <= 5; i++) {
+      periodSet.push($('table.contentGrid>tbody#content_first>tr:nth-child(' + i + ')>th:nth-child(1)').text().toString().replace(/[ ]/g, '').valueOf().replace(/\gün/g, ';').replace(/\ay/g, ';').split(';')[0])
+    }
+    for (let i = 7; i <= 11; i++) {
+      periodSet.push($('table.contentGrid>tbody#content_first>tr:nth-child(' + i + ')>th:nth-child(1)').text().toString().replace(/[ ]/g, '').valueOf().replace(/\gün/g, ';').replace(/\ay/g, ';').split(';')[0])
+    }
+    for (let i = 13; i <= 18; i++) {
+      periodSet.push($('table.contentGrid>tbody#content_first>tr:nth-child(' + i + ')>th:nth-child(1)').text().toString().replace(/[ ]/g, '').valueOf().replace(/\gün/g, ';').replace(/\ay/g, ';').split(';')[0])
+    }
+    for (let i = 20; i <= 24; i++) {
+      periodSet.push($('table.contentGrid>tbody#content_first>tr:nth-child(' + i + ')>th:nth-child(1)').text().toString().replace(/[ ]/g, '').valueOf().replace(/\gün/g, ';').replace(/\ay/g, ';').split(';')[0])
+    }
+    for (let i = 25; i <= 25; i++) {
+      periodSet.push('316-365')
+    }
 
-    let update_data = `UPDATE realtime_usd SET usd_buy='${bank_usd_buy}',usd_sell='${bank_usd_sell}',usd_rate='${bank_usd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
+    // Create Data
+    let dataSet = []
 
-    db(update_data)
+    for (let s = 0; s <= 4; s++) {
+      for (let i = 0; i < priceSet.length; i++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[i].replace(/[ .]/g, '').split('-')[0]}${priceSet[i].replace(/[ .]/g, '').split('-')[1]}${periodSet[s].replace(/[ ]/g, '').split('-')[0]}${periodSet[s].replace(/[ ]/g, '').split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[i].replace(/[ ]/g, '').split('-')[0],
+          priceEnd: priceSet[i].replace(/[ ]/g, '').split('-')[1],
+          periodStart: periodSet[s].replace(/[ ]/g, '').split('-')[0],
+          periodEnd: periodSet[s].replace(/[ ]/g, '').split('-')[1],
+          interestRate: $('table.contentGrid>tbody#content_first>tr:nth-child(' + (s + 1) + ')>td:nth-child(' + (i + 2) + ')').text().replace(/\,/g, '.').substring(0, 4)
+        })
+      }
+    }
+    for (let s = 5; s <= 9; s++) {
+      for (let i = 0; i < priceSet.length; i++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[i].replace(/[ .]/g, '').split('-')[0]}${priceSet[i].replace(/[ .]/g, '').split('-')[1]}${periodSet[s].replace(/[ ]/g, '').split('-')[0]}${periodSet[s].replace(/[ ]/g, '').split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[i].replace(/[ ]/g, '').split('-')[0],
+          priceEnd: priceSet[i].replace(/[ ]/g, '').split('-')[1],
+          periodStart: periodSet[s].replace(/[ ]/g, '').split('-')[0],
+          periodEnd: periodSet[s].replace(/[ ]/g, '').split('-')[1],
+          interestRate: $('table.contentGrid>tbody#content_first>tr:nth-child(' + (s + 2) + ')>td:nth-child(' + (i + 2) + ')').text().replace(/\,/g, '.').substring(0, 4)
+        })
+      }
+    }
+    for (let s = 10; s <= 15; s++) {
+      for (let i = 0; i < priceSet.length; i++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[i].replace(/[ .]/g, '').split('-')[0]}${priceSet[i].replace(/[ .]/g, '').split('-')[1]}${periodSet[s].replace(/[ ]/g, '').split('-')[0]}${periodSet[s].replace(/[ ]/g, '').split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[i].replace(/[ ]/g, '').split('-')[0],
+          priceEnd: priceSet[i].replace(/[ ]/g, '').split('-')[1],
+          periodStart: periodSet[s].replace(/[ ]/g, '').split('-')[0],
+          periodEnd: periodSet[s].replace(/[ ]/g, '').split('-')[1],
+          interestRate: $('table.contentGrid>tbody#content_first>tr:nth-child(' + (s + 3) + ')>td:nth-child(' + (i + 2) + ')').text().replace(/\,/g, '.').substring(0, 4)
+        })
+      }
+    }
+    for (let s = 16; s <= 21; s++) {
+      for (let i = 0; i < priceSet.length; i++) {
+        dataSet.push({
+          updateID: `${b_slug}TRY${priceSet[i].replace(/[ .]/g, '').split('-')[0]}${priceSet[i].replace(/[ .]/g, '').split('-')[1]}${periodSet[s].replace(/[ ]/g, '').split('-')[0]}${periodSet[s].replace(/[ ]/g, '').split('-')[1]}`,
+          cType: 'TRY',
+          priceStart: priceSet[i].replace(/[ ]/g, '').split('-')[0],
+          priceEnd: priceSet[i].replace(/[ ]/g, '').split('-')[1],
+          periodStart: periodSet[s].replace(/[ ]/g, '').split('-')[0],
+          periodEnd: periodSet[s].replace(/[ ]/g, '').split('-')[1],
+          interestRate: $('table.contentGrid>tbody#content_first>tr:nth-child(' + (s + 4) + ')>td:nth-child(' + (i + 2) + ')').text().replace(/\,/g, '.').substring(0, 4)
+        })
+      }
+    }
 
-    console.log('Realtime USD added!')
-    console.log(
-      `GarantiBank - USD = Alış : ${bank_usd_buy} TL / Satış: ${bank_usd_sell} TL`,
-    )
+    for (let data of dataSet) {
+
+      let create_data = `INSERT INTO realtime_interest (bank_id,update_id,interest_currency_type,interest_price_start,interest_price_end,interest_period_start,interest_period_end,interest_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${data.updateID}','${data.cType}','${data.priceStart}','${data.priceEnd}','${data.periodStart}','${data.periodEnd}','${data.interestRate}') ON DUPLICATE KEY UPDATE update_id='${data.updateID}'`
+
+      db.query(create_data, function (error) {
+        if (error) throw error;
+      })
+
+    }
+
+    console.log(dataSet.length)
+
   } catch (error) {
     console.error(error)
-    TegAction('Hey Profesör! Problem: GarantiBank -> Dolar')
+    TegAction('Hey Profesör! Problem: ' + b_name + ' -> Faiz Oranları')
   }
 }
 
-export async function getGarantiBankEUR() {
-  try {
-    const fixRes = await axios({
-      url: getURL,
-      method: 'get',
-      params: {
-        _: fixDate,
-      },
-      headers: {
-        'cache-control': 'no-cache',
-        Referer: 'https://www.garanti.com.tr/doviz-kurlari',
-        Connection: 'keep-alive',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Cache-Control': 'no-cache',
-        Accept: '*/*',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Pragma: 'no-cache',
-      },
-    })
-
-    const resData = JSON.parse(fixRes.data)
-    const resEURBuy = resData[0]['Exchange'][1]['buyRate']
-    const resEURSell = resData[0]['Exchange'][1]['sellRate']
-
-    let bank_eur_buy = fixNumber(resEURBuy)
-    let bank_eur_sell = fixNumber(resEURSell)
-    let bank_eur_rate = fixNumber(fixNumber(resEURSell) - fixNumber(resEURBuy))
-
-    let create_data = `INSERT INTO realtime_eur (bank_id,eur_buy,eur_sell,eur_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eur_buy}','${bank_eur_sell}','${bank_eur_rate}')`
-
-    let update_data = `UPDATE realtime_eur SET eur_buy='${bank_eur_buy}',eur_sell='${bank_eur_sell}',eur_rate='${bank_eur_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime EUR added!')
-    console.log(
-      `GarantiBank - EUR = Alış : ${bank_eur_buy} TL / Satış: ${bank_eur_sell} TL`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: GarantiBank -> Euro')
-  }
-}
-
-export async function getGarantiBankEURUSD() {
-  try {
-    const fixRes = await axios({
-      url: getURL,
-      method: 'get',
-      params: {
-        _: fixDate,
-      },
-      headers: {
-        'cache-control': 'no-cache',
-        Referer: 'https://www.garanti.com.tr/doviz-kurlari',
-        Connection: 'keep-alive',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Cache-Control': 'no-cache',
-        Accept: '*/*',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Pragma: 'no-cache',
-      },
-    })
-
-    const resData = JSON.parse(fixRes.data)
-    const resEURBuy = resData[0]['Exchange'][1]['buyRate']
-    const resEURSell = resData[0]['Exchange'][1]['sellRate']
-    const resUSDBuy = resData[0]['Exchange'][0]['buyRate']
-    const resUSDSell = resData[0]['Exchange'][0]['sellRate']
-
-    let bank_eurusd_buy = fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
-    let bank_eurusd_sell = fixNumber(
-      fixNumber(resEURSell) / fixNumber(resUSDSell),
-    )
-    let bank_eurusd_rate = fixNumber(
-      fixNumber(fixNumber(resEURSell) / fixNumber(resUSDSell)) -
-      fixNumber(fixNumber(resEURBuy) / fixNumber(resUSDBuy))
-    )
-
-    let create_data = `INSERT INTO realtime_eur_usd (bank_id,eur_usd_buy,eur_usd_sell,eur_usd_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_eurusd_buy}','${bank_eurusd_sell}','${bank_eurusd_rate}')`
-
-    let update_data = `UPDATE realtime_eur_usd SET eur_usd_buy='${bank_eurusd_buy}',eur_usd_sell='${bank_eurusd_sell}',eur_usd_rate='${bank_eurusd_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime EUR/USD added!')
-    console.log(
-      `GarantiBank - EUR/USD = Alış : ${bank_eurusd_buy} $ / Satış: ${bank_eurusd_sell} $`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: GarantiBank -> Euro/Dolar')
-  }
-}
-
-export async function getGarantiBankGAU() {
-  try {
-    const fixRes = await axios({
-      url: getURL,
-      method: 'get',
-      params: {
-        _: fixDate,
-      },
-      headers: {
-        'cache-control': 'no-cache',
-        Referer: 'https://www.garanti.com.tr/doviz-kurlari',
-        Connection: 'keep-alive',
-        'X-Requested-With': 'XMLHttpRequest',
-        'Cache-Control': 'no-cache',
-        Accept: '*/*',
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36',
-        'Accept-Language':
-          'en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,it;q=0.6,es;q=0.5,ru;q=0.4,und;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'AlexaToolbar-ALX_NS_PH': 'AlexaToolbar/alx-4.0.3',
-        Pragma: 'no-cache',
-      },
-    })
-
-    const resData = JSON.parse(fixRes.data)
-    const resGAUBuy = resData[0]['Exchange'][2]['buyRate']
-    const resGAUSell = resData[0]['Exchange'][2]['sellRate']
-
-    let bank_gau_buy = fixNumber(resGAUBuy)
-    let bank_gau_sell = fixNumber(resGAUSell)
-    let bank_gau_rate = fixNumber(fixNumber(resGAUSell) - fixNumber(resGAUBuy))
-
-    let create_data = `INSERT INTO realtime_gau (bank_id,gau_buy,gau_sell,gau_rate) VALUES ((SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}'),'${bank_gau_buy}','${bank_gau_sell}','${bank_gau_rate}')`
-
-    let update_data = `UPDATE realtime_gau SET gau_buy='${bank_gau_buy}',gau_sell='${bank_gau_sell}',gau_rate='${bank_gau_rate}' WHERE bank_id=(SELECT bank_id FROM bank_list WHERE bank_name = '${b_name}')`
-
-    db(update_data)
-
-    console.log('Realtime GAU added!')
-    console.log(
-      `GarantiBank - GAU = Alış : ${bank_gau_buy} TL / Satış: ${bank_gau_sell} TL`,
-    )
-  } catch (error) {
-    console.error(error)
-    TegAction('Hey Profesör! Problem: GarantiBank -> Altın')
-  }
-}
-
-export default function getGarantiBankForex() {
-  return (
-    getGarantiBankUSD() +
-    getGarantiBankEUR() +
-    getGarantiBankGAU() +
-    getGarantiBankEURUSD() +
-    db(update_sql)
-  )
-}
+module.exports = getGarantiBank;

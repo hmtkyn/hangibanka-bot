@@ -1,10 +1,10 @@
 const TegAction = require('../../functions/telegram')
 const db = require('../../functions/mysql')
 
-const b_name = "SeninBankan"
-const b_slug = "seninbankan"
-const b_url = "https://www.seninbankan.com.tr"
-const b_logo = "https://hangibank.com/img/bank/seninbankan_logo.jpg"
+const b_name = "Emlak Katılım"
+const b_slug = "emlakkatilim"
+const b_url = "https://www.emlakbank.com.tr"
+const b_logo = "https://hangibank.com/img/bank/emlakkatilim_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Katılım"
 
@@ -12,7 +12,8 @@ let create_sql = `INSERT INTO bank_list (bank_name,bank_slug,bank_url,bank_logo,
 
 let update_sql = `UPDATE bank_list SET bank_name='${b_name}',bank_slug='${b_slug}',bank_url='${b_url}',bank_logo='${b_logo}',bank_type_capital='${b_type_capital}',bank_type_service='${b_type_service}' WHERE bank_name='${b_name}'`
 
-async function getSeninBankan() {
+
+async function getEmlakKatilim() {
 
   try {
 
@@ -27,148 +28,112 @@ async function getSeninBankan() {
     // Create Data
     let dataSet = [
       {
-        updateID: 'seninbankanTRY10000100003131',
+        updateID: 'emlakkatilimTRY10000100003131',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.52'
       },
       {
-        updateID: 'seninbankanTRY10000100009191',
+        updateID: 'emlakkatilimTRY10000100009191',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.09'
       },
       {
-        updateID: 'seninbankanTRY1000010000180180',
+        updateID: 'emlakkatilimTRY1000010000180180',
         cType: 'TRY',
         priceStart: '10.000',
         priceEnd: '10.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.29'
       },
       {
-        updateID: 'seninbankanTRY1000010000366366',
-        cType: 'TRY',
-        priceStart: '10.000',
-        priceEnd: '10.000',
-        periodStart: '366',
-        periodEnd: '366',
-        profitShareRate: '16.1'
-      },
-      {
-        updateID: 'seninbankanTRY50000500003131',
+        updateID: 'emlakkatilimTRY50000500003131',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.52'
       },
       {
-        updateID: 'seninbankanTRY50000500009191',
+        updateID: 'emlakkatilimTRY50000500009191',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.09'
       },
       {
-        updateID: 'seninbankanTRY5000050000180180',
+        updateID: 'emlakkatilimTRY5000050000180180',
         cType: 'TRY',
         priceStart: '50.000',
         priceEnd: '50.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.29'
       },
       {
-        updateID: 'seninbankanTRY5000050000366366',
-        cType: 'TRY',
-        priceStart: '50.000',
-        priceEnd: '50.000',
-        periodStart: '366',
-        periodEnd: '366',
-        profitShareRate: '16.1'
-      },
-      {
-        updateID: 'seninbankanTRY1000001000003131',
+        updateID: 'emlakkatilimTRY1000001000003131',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.52'
       },
       {
-        updateID: 'seninbankanTRY1000001000009191',
+        updateID: 'emlakkatilimTRY1000001000009191',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.09'
       },
       {
-        updateID: 'seninbankanTRY100000100000180180',
+        updateID: 'emlakkatilimTRY100000100000180180',
         cType: 'TRY',
         priceStart: '100.000',
         priceEnd: '100.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
+        profitShareRate: '11.29'
       },
       {
-        updateID: 'seninbankanTRY100000100000366366',
-        cType: 'TRY',
-        priceStart: '100.000',
-        priceEnd: '100.000',
-        periodStart: '366',
-        periodEnd: '366',
-        profitShareRate: '16.1'
-      },
-      {
-        updateID: 'seninbankanTRY2500002500003131',
+        updateID: 'emlakkatilimTRY2500002500003131',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '31',
         periodEnd: '31',
-        profitShareRate: '8.16'
+        profitShareRate: '8.52'
       },
       {
-        updateID: 'seninbankanTRY2500002500009191',
+        updateID: 'emlakkatilimTRY2500002500009191',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '91',
         periodEnd: '91',
-        profitShareRate: '9.52'
+        profitShareRate: '9.09'
       },
       {
-        updateID: 'seninbankanTRY250000250000180180',
+        updateID: 'emlakkatilimTRY250000250000180180',
         cType: 'TRY',
         priceStart: '250.000',
         priceEnd: '250.000',
         periodStart: '180',
         periodEnd: '180',
-        profitShareRate: '12.05'
-      },
-      {
-        updateID: 'seninbankanTRY250000250000366366',
-        cType: 'TRY',
-        priceStart: '250.000',
-        priceEnd: '250.000',
-        periodStart: '366',
-        periodEnd: '366',
-        profitShareRate: '16.1'
+        profitShareRate: '11.29'
       }
     ]
     console.log(dataSet)
@@ -191,4 +156,4 @@ async function getSeninBankan() {
 
 }
 
-module.exports = getSeninBankan;
+module.exports = getEmlakKatilim;
