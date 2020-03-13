@@ -195,11 +195,115 @@ app.get('/usd/:bank_slug/archive', (req, res) => {
 
 })
 
+app.get('/usd/:bank_slug/archive/lastday', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_usd,bank_list WHERE archive_usd.bank_id = bank_list.bank_id AND usd_update >= NOW() - INTERVAL 1 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/usd/:bank_slug/archive/lastweek', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_usd,bank_list WHERE archive_usd.bank_id = bank_list.bank_id AND usd_update >= DATE(NOW()) - INTERVAL 7 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/usd/:bank_slug/archive/lastmonth', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_usd,bank_list WHERE archive_usd.bank_id = bank_list.bank_id AND usd_update >= NOW() - INTERVAL 1 month AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/usd/:bank_slug/archive/lastyear', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_usd,bank_list WHERE archive_usd.bank_id = bank_list.bank_id AND usd_update >= NOW() - INTERVAL 1 year AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
 app.get('/eur/:bank_slug/archive', (req, res) => {
 
   let bankSlug = req.params.bank_slug;
 
   let sql = `SELECT * FROM archive_eur,bank_list WHERE archive_eur.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur/:bank_slug/archive/lastday', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur,bank_list WHERE archive_eur.bank_id = bank_list.bank_id AND eur_update >= NOW() - INTERVAL 1 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur/:bank_slug/archive/lastweek', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur,bank_list WHERE archive_eur.bank_id = bank_list.bank_id AND eur_update >= DATE(NOW()) - INTERVAL 7 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur/:bank_slug/archive/lastmonth', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur,bank_list WHERE archive_eur.bank_id = bank_list.bank_id AND eur_update >= NOW() - INTERVAL 1 month AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur/:bank_slug/archive/lastyear', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur,bank_list WHERE archive_eur.bank_id = bank_list.bank_id AND eur_update >= NOW() - INTERVAL 1 year AND bank_list.bank_slug=?`;
 
   let query = db.query(sql, [bankSlug], (err, results) => {
     if (err) throw err;
@@ -221,11 +325,115 @@ app.get('/eur-usd/:bank_slug/archive', (req, res) => {
 
 })
 
+app.get('/eur-usd/:bank_slug/archive/lastday', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur_usd,bank_list WHERE archive_eur_usd.bank_id = bank_list.bank_id AND eur_usd_update >= NOW() - INTERVAL 1 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur-usd/:bank_slug/archive/lastweek', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur_usd,bank_list WHERE archive_eur_usd.bank_id = bank_list.bank_id AND eur_usd_update >= DATE(NOW()) - INTERVAL 7 DAY AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur-usd/:bank_slug/archive/lastmonth', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur_usd,bank_list WHERE archive_eur_usd.bank_id = bank_list.bank_id AND eur_usd_update >= NOW() - INTERVAL 1 month AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/eur-usd/:bank_slug/archive/lastyear', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_eur_usd,bank_list WHERE archive_uer_usd.bank_id = bank_list.bank_id AND eur_usd_update >= NOW() - INTERVAL 1 year AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
 app.get('/gau/:bank_slug/archive', (req, res) => {
 
   let bankSlug = req.params.bank_slug;
 
   let sql = `SELECT * FROM archive_gau,bank_list WHERE archive_gau.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/gau/:bank_slug/archive/lastday', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_gau,bank_list WHERE archive_gau.bank_id = bank_list.bank_id AND gau_update >= NOW() - INTERVAL 1 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/gau/:bank_slug/archive/lastweek', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_gau,bank_list WHERE archive_gau.bank_id = bank_list.bank_id AND gau_update >= DATE(NOW()) - INTERVAL 7 DAY AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/gau/:bank_slug/archive/lastmonth', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_gau,bank_list WHERE archive_gau.bank_id = bank_list.bank_id AND gau_update >= NOW() - INTERVAL 1 month AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/gau/:bank_slug/archive/lastyear', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_gau,bank_list WHERE archive_gau.bank_id = bank_list.bank_id AND gau_update >= NOW() - INTERVAL 1 year AND bank_list.bank_slug=?`;
 
   let query = db.query(sql, [bankSlug], (err, results) => {
     if (err) throw err;
@@ -247,11 +455,115 @@ app.get('/interest/:bank_slug/archive', (req, res) => {
 
 })
 
+app.get('/interest/:bank_slug/archive/lastday', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_interest,bank_list WHERE archive_interest.bank_id = bank_list.bank_id AND interest_update >= NOW() - INTERVAL 1 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/interest/:bank_slug/archive/lastweek', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_interest,bank_list WHERE archive_interest.bank_id = bank_list.bank_id AND interest_update >= DATE(NOW()) - INTERVAL 7 DAY AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/interest/:bank_slug/archive/lastmonth', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_interest,bank_list WHERE archive_interest.bank_id = bank_list.bank_id AND interest_update >= NOW() - INTERVAL 1 month AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/interest/:bank_slug/archive/lastyear', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_interest,bank_list WHERE archive_interest.bank_id = bank_list.bank_id AND interest_update >= NOW() - INTERVAL 1 year AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
 app.get('/profit/:bank_slug/archive', (req, res) => {
 
   let bankSlug = req.params.bank_slug;
 
   let sql = `SELECT * FROM archive_profit,bank_list WHERE archive_profit.bank_id = bank_list.bank_id AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit/:bank_slug/archive/lastday', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_profit,bank_list WHERE archive_profit.bank_id = bank_list.bank_id AND profit_update >= NOW() - INTERVAL 1 day AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit/:bank_slug/archive/lastweek', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_profit,bank_list WHERE archive_profit.bank_id = bank_list.bank_id AND profit_update >= DATE(NOW()) - INTERVAL 7 DAY AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit/:bank_slug/archive/lastmonth', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_profit,bank_list WHERE archive_profit.bank_id = bank_list.bank_id AND profit_update >= NOW() - INTERVAL 1 month AND bank_list.bank_slug=?`;
+
+  let query = db.query(sql, [bankSlug], (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ "status": 200, "error": null, "response": results }));
+  });
+
+})
+
+app.get('/profit/:bank_slug/archive/lastyear', (req, res) => {
+
+  let bankSlug = req.params.bank_slug;
+
+  let sql = `SELECT * FROM archive_profit,bank_list WHERE archive_profit.bank_id = bank_list.bank_id AND profit_update >= NOW() - INTERVAL 1 year AND bank_list.bank_slug=?`;
 
   let query = db.query(sql, [bankSlug], (err, results) => {
     if (err) throw err;
