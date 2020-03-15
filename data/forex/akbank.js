@@ -6,7 +6,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "Akbank"
 const b_slug = "akbank"
 const b_url = "https://www.akbank.com"
-const b_logo = "https://hangibank.com/img/bank/akbank_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/akbank_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

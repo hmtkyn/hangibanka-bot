@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "HalkBank"
 const b_slug = "halkbank"
 const b_url = "https://www.halkbank.com.tr"
-const b_logo = "https://hangibank.com/img/bank/halk_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/halk_logo.jpg"
 const b_type_capital = "Kamu"
 const b_type_service = "Mevduat"
 

@@ -6,7 +6,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "Yapı Kredi"
 const b_slug = "yapikredi"
 const b_url = "https://www.yapikredi.com.tr"
-const b_logo = "https://hangibank.com/img/bank/yapi_kredi_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/yapi_kredi_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

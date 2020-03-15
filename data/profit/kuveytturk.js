@@ -4,7 +4,7 @@ const db = require('../../functions/mysql')
 const b_name = "Kuveyt Türk"
 const b_slug = "kuveytturk"
 const b_url = "https://www.kuveytturk.com.tr"
-const b_logo = "https://hangibank.com/img/bank/kuveyt_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/kuveyt_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Katılım"
 

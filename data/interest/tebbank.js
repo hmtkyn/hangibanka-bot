@@ -6,7 +6,7 @@ const db = require('../../functions/mysql')
 const b_name = "TEB"
 const b_slug = "teb"
 const b_url = "https://www.teb.com.tr"
-const b_logo = "https://hangibank.com/img/bank/teb_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/teb_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

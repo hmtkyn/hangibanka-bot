@@ -6,7 +6,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "İş Bank"
 const b_slug = "isbank"
 const b_url = "https://www.isbank.com.tr"
-const b_logo = "https://hangibank.com/img/bank/is_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/is_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

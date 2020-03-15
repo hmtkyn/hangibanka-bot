@@ -4,7 +4,7 @@ const db = require('../../functions/mysql')
 const b_name = "Emlak Katılım"
 const b_slug = "emlakkatilim"
 const b_url = "https://www.emlakbank.com.tr"
-const b_logo = "https://hangibank.com/img/bank/emlakkatilim_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/emlakkatilim_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Katılım"
 

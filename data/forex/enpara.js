@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "EnPara"
 const b_slug = "enpara"
 const b_url = "https://www.qnbfinansbank.enpara.com"
-const b_logo = "https://hangibank.com/img/bank/enpara_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/enpara_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "VakıfBank"
 const b_slug = "vakifbank"
 const b_url = "https://www.vakifbank.com.tr"
-const b_logo = "https://hangibank.com/img/bank/vakif_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/vakif_logo.jpg"
 const b_type_capital = "Kamu"
 const b_type_service = "Mevduat"
 

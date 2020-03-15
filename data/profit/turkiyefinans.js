@@ -4,7 +4,7 @@ const db = require('../../functions/mysql')
 const b_name = "Türkiye Finans"
 const b_slug = "turkiyefinans"
 const b_url = "https://www.turkiyefinans.com.tr"
-const b_logo = "https://hangibank.com/img/bank/tfkb_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/tfkb_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Katılım"
 

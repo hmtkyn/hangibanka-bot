@@ -6,7 +6,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "Garanti BBVA"
 const b_slug = "garantibbva"
 const b_url = "https://www.garantibbva.com.tr"
-const b_logo = "https://hangibank.com/img/bank/garanti_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/garanti_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

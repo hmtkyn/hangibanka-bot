@@ -16,6 +16,7 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'assets')));
+// app.use(express.static('assets'))
 
 app.all('/*', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -34,7 +35,7 @@ app.get('/', function (req, res, next) {
 // REAL-TIME START
 app.get('/usd', (req, res) => {
 
-  let sql = `SELECT * FROM realtime_usd LEFT JOIN bank_list ON realtime_usd.bank_id = bank_list.bank_id`;
+  let sql = `SELECT * FROM realtime_usd LEFT JOIN bank_list ON realtime_usd.bank_id = bank_list.bank_id ORDER BY ABS(usd_rate) DESC`;
 
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
@@ -45,7 +46,7 @@ app.get('/usd', (req, res) => {
 
 app.get('/eur', (req, res) => {
 
-  let sql = `SELECT * FROM realtime_eur LEFT JOIN bank_list ON realtime_eur.bank_id = bank_list.bank_id`;
+  let sql = `SELECT * FROM realtime_eur LEFT JOIN bank_list ON realtime_eur.bank_id = bank_list.bank_id ORDER BY ABS(eur_rate) DESC`;
 
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
@@ -56,7 +57,7 @@ app.get('/eur', (req, res) => {
 
 app.get('/eur-usd', (req, res) => {
 
-  let sql = `SELECT * FROM realtime_eur_usd LEFT JOIN bank_list ON realtime_eur_usd.bank_id = bank_list.bank_id`;
+  let sql = `SELECT * FROM realtime_eur_usd LEFT JOIN bank_list ON realtime_eur_usd.bank_id = bank_list.bank_id ORDER BY ABS(eur_usd_rate) DESC`;
 
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
@@ -67,7 +68,7 @@ app.get('/eur-usd', (req, res) => {
 
 app.get('/gau', (req, res) => {
 
-  let sql = `SELECT * FROM realtime_gau LEFT JOIN bank_list ON realtime_gau.bank_id = bank_list.bank_id`;
+  let sql = `SELECT * FROM realtime_gau LEFT JOIN bank_list ON realtime_gau.bank_id = bank_list.bank_id ORDER BY ABS(gau_rate) DESC`;
 
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
@@ -78,7 +79,7 @@ app.get('/gau', (req, res) => {
 
 app.get('/interest', (req, res) => {
 
-  let sql = `SELECT * FROM realtime_interest LEFT JOIN bank_list ON realtime_interest.bank_id = bank_list.bank_id`;
+  let sql = `SELECT * FROM realtime_interest LEFT JOIN bank_list ON realtime_interest.bank_id = bank_list.bank_id ORDER BY ABS(interest_rate) DESC`;
 
   let query = db.query(sql, (err, results) => {
     if (err) throw err;
@@ -89,7 +90,7 @@ app.get('/interest', (req, res) => {
 
 app.get('/profit', (req, res) => {
 
-  let sql = `SELECT * FROM realtime_profit LEFT JOIN bank_list ON realtime_profit.bank_id = bank_list.bank_id`;
+  let sql = `SELECT * FROM realtime_profit LEFT JOIN bank_list ON realtime_profit.bank_id = bank_list.bank_id ORDER BY ABS(profit_share_rate) DESC`;
 
   let query = db.query(sql, (err, results) => {
     if (err) throw err;

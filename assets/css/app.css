@@ -367,3 +367,29 @@ body {
   width: 100%;
   height: 100vh;
 }
+#getAccount {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#getAccount > ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+#getAccount > ul > li {
+  padding: 0;
+  margin: 0.25rem;
+}
+#getAccount > ul > li > img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 0.25rem;
+}

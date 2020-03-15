@@ -4,8 +4,9 @@ html(lang='tr')
     title Hangi Bank
     meta(charset='UTF-8')
     meta(name='viewport', content='width=device-width, initial-scale=1.0')
+    meta(name='google-signin-client_id', content='1013639598050-p6vg89egakvf35uukujgs3qggo6ml54p.apps.googleusercontent.com')
     link(href='https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap', rel='stylesheet')
-    link(rel='stylesheet', href='/css/app.css')
+    link(rel='stylesheet', href='/assets/css/app.css')
     // Global site tag (gtag.js) - Google Analytics
     script(async='', src='https://www.googletagmanager.com/gtag/js?id=UA-140703576-1')
     script.
@@ -13,5 +14,8 @@ html(lang='tr')
       function gtag() { dataLayer.push(arguments); }
       gtag('js', new Date());
       gtag('config', 'UA-140703576-1');
+    script(src='https://apis.google.com/js/platform.js', async='', defer='')
+    script(type='text/javascript', src='https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js')
+    script(src='assets/js/app.js')
   body
     block content

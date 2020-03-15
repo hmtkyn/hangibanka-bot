@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "Denizbank"
 const b_slug = "denizbank"
 const b_url = "https://www.denizbank.com"
-const b_logo = "https://hangibank.com/img/bank/denizbank_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/denizbank_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

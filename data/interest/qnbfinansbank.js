@@ -6,7 +6,7 @@ const db = require('../../functions/mysql')
 const b_name = "QNB Finansbank"
 const b_slug = "qnbfinansbank"
 const b_url = "https://www.qnbfinansbank.com"
-const b_logo = "https://hangibank.com/img/bank/qnb_finans_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/qnb_finans_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

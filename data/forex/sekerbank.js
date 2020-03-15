@@ -7,7 +7,7 @@ const fixNumber = require('../../functions/numberfix');
 const b_name = "ŞekerBank"
 const b_slug = "sekerbank"
 const b_url = "https://www.sekerbank.com.tr"
-const b_logo = "https://hangibank.com/img/bank/seker_logo.jpg"
+const b_logo = "https://hangibank.com/assets/img/bank/seker_logo.jpg"
 const b_type_capital = "Özel"
 const b_type_service = "Mevduat"
 

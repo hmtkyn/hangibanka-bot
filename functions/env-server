@@ -1,5 +1,5 @@
 TELEGRAM_BOT_TOKEN      = 1015986861:AAHPUV9wh7QbJI56FzWC_Qms2GnHg5IOPJo
 MYSQL_HOST              = localhost
-MYSQL_USERNAME          = root
-MYSQL_PASSWORD          = 
+MYSQL_USERNAME          = admin
+MYSQL_PASSWORD          = VLz6hvou8ao7qW7
 MYSQL_DATABASE          = hangibank
