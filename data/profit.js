@@ -9,7 +9,7 @@ const getZiraatKatilim = require('./profit/ziraatkatilim');
 const archiveProfit = require('./profit/archive');
 
 function Profit() {
-  cron.schedule('0 9,12,13,17 * * *', () => {
+  cron.schedule('* * * * *', () => {
     return (
       console.log('==========>') +
       getAlbarakaTurk() +

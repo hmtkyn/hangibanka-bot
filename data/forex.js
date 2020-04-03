@@ -23,6 +23,10 @@ function Forex() {
   cron.schedule('* * * * *', () => {
     return (
       console.log('==========>') +
+      console.log('1 == ' + Date.now()) +
+      console.log('2 == ' + new Date().getTime()) +
+      console.log('3 == ' + new Date().getHours() + ':' + new Date().getMinutes()) +
+      console.log('4 == ' + parseInt((new Date().getTime() / 1000).toString().slice(0, -4))) +
       getAkbankForex() +
       getAlBarakaTurkBankForex() +
       getDenizBankForex() +

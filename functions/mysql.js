@@ -13,6 +13,7 @@ const db = mysql.createPool({
   user: mysql_username,
   password: mysql_password,
   database: mysql_database,
+  timezone: "UTC+3",
   acquireTimeout: 30000,
   connectionLimit: 10
 });

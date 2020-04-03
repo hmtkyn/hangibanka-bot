@@ -15,7 +15,7 @@ const getZiraatBank = require('./interest/ziraatbank');
 const archiveInterest = require('./interest/archive');
 
 function Interest() {
-  cron.schedule('0 9,12,13,17 * * *', () => {
+  cron.schedule('* * * * *', () => {
     return (
       console.log('==========>') +
       getAkBank() +

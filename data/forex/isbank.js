@@ -18,9 +18,14 @@ let fixUTCMonth = new Date().getUTCMonth()
 
 let fixUTCFullTime = new Date().getUTCFullYear() + '-' + ++fixUTCMonth + '-' + new Date().getUTCDate()
 
-let fixUTCFullTimeConvert = Date.now()
+let fixUTCFullTimeConvert = parseInt((new Date().getTime()))
+
+console.log(fixUTCFullTime);
+console.log(fixUTCFullTimeConvert);
 
 let getURL = "https://www.isbank.com.tr/_vti_bin/DV.Isbank/PriceAndRate/PriceAndRateService.svc/GetFxRates?Lang=tr&fxRateType=INTERACTIVE&date=" + fixUTCFullTime + "&time=" + fixUTCFullTimeConvert + ""
+
+// let ss = "https://www.isbank.com.tr/_vti_bin/DV.Isbank/PriceAndRate/PriceAndRateService.svc/GetFxRates?Lang=tr&fxRateType=INTERACTIVE&date=2020-04-03&time=1585904599201"
 
 async function getIsBankUSD() {
   try {

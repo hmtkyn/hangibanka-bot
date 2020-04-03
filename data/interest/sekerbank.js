@@ -32,14 +32,14 @@ async function getSekerBank() {
     // Create Price Set Manuel
     const priceSet = []
     for (let i = 2; i <= 6; i++) {
-      priceSet.push($('#div_parabirimi_TL > table > tbody > tr:nth-child(1) > th:nth-child(' + i + ')').text().replace(/,/g, '.'))
+      priceSet.push($('#div_parabirimi_TL > table > tbody > tr:nth-child(1) > th:nth-child(' + i + ')').text().replace(/[,]/g, '.').trim())
     }
     console.log(priceSet)
 
     // Create Period Set Manuel
     const periodSet = [];
     for (let i = 2; i <= 12; i++) {
-      periodSet.push($('#div_parabirimi_TL > table > tbody > tr:nth-child(' + i + ') > td:nth-child(1)').html().replace(/[ G&#xFFFD;n]/g, ''))
+      periodSet.push($('#div_parabirimi_TL > table > tbody > tr:nth-child(' + i + ') > td:nth-child(1)').html().replace(/[ G&#xFFFD;n]/g, '').trim())
     }
     for (let i = 13; i <= 13; i++) {
       periodSet.push('365-999')
@@ -53,10 +53,10 @@ async function getSekerBank() {
         dataSet.push({
           updateID: `${b_slug}TRY${priceSet[price].split('-')[0].slice(0, -3).replace(/[ .]/g, '')}${priceSet[price].split('-')[1].slice(0, -3).replace(/[ .]/g, '')}${periodSet[period].split('-')[0]}${periodSet[period].split('-')[1]}`,
           cType: 'TRY',
-          priceStart: priceSet[price].split('-')[0].slice(0, -4),
-          priceEnd: priceSet[price].split('-')[1].slice(0, -3),
-          periodStart: periodSet[period].split('-')[0],
-          periodEnd: periodSet[period].split('-')[1],
+          priceStart: priceSet[price].split('-')[0].slice(0, -4).trim(),
+          priceEnd: priceSet[price].split('-')[1].slice(0, -3).trim(),
+          periodStart: periodSet[period].split('-')[0].trim(),
+          periodEnd: periodSet[period].split('-')[1].trim(),
           interestRate: $('#div_parabirimi_TL > table > tbody > tr:nth-child(' + (period + 2) + ') > td:nth-child(' + (price + 2) + ')').text()
         })
       }
@@ -81,3 +81,4 @@ async function getSekerBank() {
 }
 
 module.exports = getSekerBank;
+getSekerBank();
